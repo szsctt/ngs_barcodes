@@ -1,9 +1,14 @@
 #each dataset should have a unique name, and contain the following fields 
 dataset1:
-    path: "/Users/sco305/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/"                        #absolute path to folder containing reads
-    capsid_barcodes: "~/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt" #path to file containing capsid barcodes
-    sample_barcodes: None                                                               #path to file containing sample barcodes
-    R1_pattern: _R1.fastq.gz                                                            #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
+    path: "/Users/sco305/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/"                   #absolute path to folder containing reads
+    capsid_barcodes: "~/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt"        #path to file containing capsid barcodes
+    sample_start: 1             #start base for sample barcodes (1-based)
+    sample_length: 6            #length of sample barcodes
+    capsid_start: 72            #start base for where barcode appears in read AFTER REMOVAL OF SAMPLE BARCODE (1-based)
+    capsid_length: 6            #length of barcode
+    sample_barcodes: None       #path to file containing sample barcodes                                                             
+    R1_pattern: _R1.fastq.gz    #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
     R2_pattern: _R2.fastq.gz
-    adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA                                         #adapters used for sequencing
-    adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
+    adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA     #adapters used for sequencing
+    adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT    
+    fwdPrimer: gctggagttcgtgaccgccg                 #need to know this to know if merged reads are forward or reverse
