@@ -1,14 +1,28 @@
 #each dataset should have a unique name, and contain the following fields 
 dataset1:
+
+    # read information
+    ## provide path to folder containing reads and other necessary information below
+    ## assume paired-end amplicon sequencing
     path: "/Users/sco305/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/"                   #absolute path to folder containing reads
-    capsid_barcodes: "~/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt"        #path to file containing capsid barcodes
-    sample_start: 1             #start base for sample barcodes (1-based)
-    sample_length: 6            #length of sample barcodes
-    capsid_start: 72            #start base for where barcode appears in read AFTER REMOVAL OF SAMPLE BARCODE (1-based)
-    capsid_length: 6            #length of barcode
-    sample_barcodes: None       #path to file containing sample barcodes                                                             
-    R1_pattern: _R1.fastq.gz    #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
+    R1_pattern: _R1.fastq.gz                        #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
     R2_pattern: _R2.fastq.gz
     adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA     #adapters used for sequencing
     adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT    
     fwdPrimer: gctggagttcgtgaccgccg                 #need to know this to know if merged reads are forward or reverse
+    amplicon_length: 150                                #length of reads
+
+    # barcode information
+    ## assume one or two barcodes per read
+    ## provide 'sample barcodes' when there is more than one sample per file (this is optional)
+    ## provide 'capsid barcodes' to specify which barcode sequences to search for, and their names
+    ## for each, also provide the position in the read where the barcode starts, and its length
+    sample_barcodes: None       #path to file containing sample barcodes        
+    sample_start: 1             #start base for sample barcodes (1-based)
+    sample_length: 6            #length of sample barcodes
+    
+    capsid_barcodes: "~/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt"        #path to file containing capsid barcodes
+    capsid_start: 72            #start base for where barcode appears in read AFTER REMOVAL OF SAMPLE BARCODE (1-based)
+    capsid_length: 6            #length of barcode
+    
+                                                     
