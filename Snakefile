@@ -74,10 +74,6 @@ rule filter:
 		bbduk.sh in={input} out={output} minlen={params.len} maxlen={params.len}
 		"""
 
-rule seperate:
-
-
-		
 #run script to count barcodes
 rule count:
 	input:
