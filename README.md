@@ -27,7 +27,7 @@ Each dataset may consist of paired-end reads from more than one sample.
 
 Provide a path to the folder containing the reads from this dataset (`path`).  Please do not use spaces or special characters in this (or any other) paths.
 
-Also provide the suffix for each file (`R1\_pattern`, `R2\_pattern` eg "\_R1.fastq.gz", "\_R2.fastq.gz"), the forward primer used for amplification (`fwdPrimer`), the adapters used for sequencing (`adapter1` and `adapter2`), and the length of the amplicon (`amplicon\_length`).   If sample barcodes were added during amplification, note that the sequence of `fwdPrimer` must not contain those barcodes (in other words, it should be common to all the reads, regardless of which sample barcode was added).
+Also provide the suffix for each file (`R1_pattern`, `R2_pattern` eg `_R1.fastq.gz`, `_R2.fastq.gz`), the forward primer used for amplification (`fwdPrimer`), the adapters used for sequencing (`adapter1` and `adapter2`), and the length of the amplicon (`amplicon_length`).   If sample barcodes were added during amplification, note that the sequence of `fwdPrimer` must not contain those barcodes (in other words, it should be common to all the reads, regardless of which sample barcode was added).
 
 ### Barcodes
 
@@ -36,12 +36,12 @@ Sequences may contain two types of barcodes. Sample barcodes specify which sampl
 #### Sample barcodes
 Optionally, if multiple samples were combined in one sequencing run, barcodes for each sample can be specified.  
 
-In this case, specify the path to the file containing the barcodes and their names (`sample\_barcodes`).  This file must have three columns: the first is a barcode ID (a number), the second is the barcode sequence (eg GATTAC) and the third is a barcode name.  Each column is separated by a space, and each line contains one barcode. 
+In this case, specify the path to the file containing the barcodes and their names (`sample_barcodes`).  This file must have three columns: the first is a barcode ID (a number), the second is the barcode sequence (eg GATTAC) and the third is a barcode name.  Each column is separated by a space, and each line contains one barcode. 
 
 #### Capsid barcodes
-Provide a path to a file containing the barcodes and their names (`capsid\_barcodes`).  This file must have three columns: the first is a barcode ID (a number), the second is the barcode sequence (eg GATTAC) and the third is a barcode name.  Each column is separated by a space, and each line contains one barcode.
+Provide a path to a file containing the barcodes and their names (`capsid_barcodes`).  This file must have three columns: the first is a barcode ID (a number), the second is the barcode sequence (eg GATTAC) and the third is a barcode name.  Each column is separated by a space, and each line contains one barcode.
 
-Also provide the position within the amplicon where the barcode is located, by specifying the `capsid\_start` and `capsid\_length`.  Note that capsid\_start should specify the first base of the barcode after the removal of any sample barcodes.
+Also provide the position within the amplicon where the barcode is located, by specifying the `capsid_start` and `capsid_length`.  Note that capsid\_start should specify the first base of the barcode after the removal of any sample barcodes.
 
 ## Running the pipeline
 
