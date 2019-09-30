@@ -1,0 +1,9 @@
+#each dataset should have a unique name, and contain the following fields 
+dataset1:
+    path: "/Users/sco305/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/"                        #absolute path to folder containing reads
+    capsid_barcodes: "~/OneDrive_CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt" #path to file containing capsid barcodes
+    sample_barcodes: None                                                               #path to file containing sample barcodes
+    R1_pattern: _R1.fastq.gz                                                            #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
+    R2_pattern: _R2.fastq.gz
+    adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA                                         #adapters used for sequencing
+    adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
