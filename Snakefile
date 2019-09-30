@@ -61,16 +61,22 @@ rule merge:
 		bbmerge.sh in1="{input.r1}" in2="{input.r2}" out="{output.merged}" outu1="{output.proc_r1}" outu2="{output.proc_r2}" adapter1={params.A} adapter2={params.B}
 		"""
 
-#retain only reads 150 bp in length
+#retain only reads that are the correct length
 rule filter:
 	input:
 		"out/{dataset}/{sample}.merged.fastq.gz"
 	output:	
 		"out/{dataset}/{sample}.merged.filtered.fastq.gz"
+	params:
+		len = lambda wildcards: config[wildcards.dataset]["amplicon_length"]
 	shell:
 		"""
-		bbduk.sh in={input} out={output} minlen=150 maxlen=150
+		bbduk.sh in={input} out={output} minlen={params.len} maxlen={params.len}
 		"""
+
+rule seperate:
+
+
 		
 #run script to count barcodes
 rule count:
