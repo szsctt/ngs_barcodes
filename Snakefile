@@ -38,7 +38,7 @@ for dataset in config:
 #### target files ####
 rule all:
 	input: 
-		expand("out/{dataset}/{sample}.merged.filtered.fastq.gz", zip, dataset = DATASETS, sample = SAMPLES)
+		expand("out/{dataset}/{sample}.counts.txt", zip, dataset = DATASETS, sample = SAMPLES)
 		
 #### merging ####
 
@@ -70,4 +70,22 @@ rule filter:
 	shell:
 		"""
 		bbduk.sh in={input} out={output} minlen=150 maxlen=150
+		"""
+		
+#run script to count barcodes
+rule count:
+	input:
+		"out/{dataset}/{sample}.merged.filtered.fastq.gz"
+	output:
+		"out/{dataset}/{sample}.counts.txt"
+	params:
+		bc_file = lambda wildcards: config[wildcards.dataset]["capsid_barcodes"],
+		start = lambda wildcards: config[wildcards.dataset]["capsid_start"],
+		length = lambda wildcards: config[wildcards.dataset]["capsid_length"],
+		prim = lambda wildcards: config[wildcards.dataset]["fwdPrimer"],
+		unzipped_reads = lambda wildcards, input: str(input)[:-3],
+	shell:
+		"""
+		gunzip -f {input}
+		perl src/barcodes.pl --barcodes {params.bc_file} --reads {params.unzipped_reads} --out {output} --start {params.start} --length {params.length} --fwdPrimer {params.prim}
 		"""
