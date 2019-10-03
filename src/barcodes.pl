@@ -256,6 +256,7 @@ while (my $line = <READS>) {
 				#check for barcode by hash lookup
 				foreach my $query (@setQueries) {
 					if (exists $barcs_yaml->{$set}->{"search"}->{$query}) {
+						push @setMatches, $query;
 					}
 				}
 			}
@@ -265,12 +266,11 @@ while (my $line = <READS>) {
 				$match = $barcs_yaml->{$set}->{"search"}->{$match};
 			}
 			my %seen = ();
-			@setMatches = grep { ! $seen{$_} ++ } @setMatches;
+			my @uniqSetMatches= grep { ! $seen{$_} ++ } @setMatches;
 			
 			
 			#push set matches to @matches
-			push @matches, \@setMatches;
-			
+			push @matches, \@uniqSetMatches;
 			
 		}
 		
