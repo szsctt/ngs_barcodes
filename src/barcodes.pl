@@ -22,6 +22,7 @@ my $prefix; # prefix for output file names [""]
 my $outpath = "."; #output folder for counts and read files
 my $mismatches = 0; #number of allowed mismatches
 my $fwdPrimer; #forward primer to check if read is forward or reverse
+my $n_to_process;
 my $toprint = 500000; #for updates every $toPrint reads
 my $help;
 
@@ -34,6 +35,7 @@ GetOptions('barcodes=s' 		=> \$barcodes,
 		   'extend_search=i'  	=> \$extend_search,
 		   'mismatches=i'		=> \$mismatches,
 		   'fwdPrimer=s'		=> \$fwdPrimer,	   
+		   'n_reads=i'			=> \$n_to_process,	  
 	       'help',    			=> \$help);
 
 if ($help) { printHelp(); }
@@ -73,7 +75,7 @@ my $printFastq;
 ## 			bc2: TCTGAA
 ## 			bc3: TTAGGA
 ##	barcodes2:
-##		start: 1
+##		start: 0
 ##		barcodes:
 ## 			bc3: ACCTCT
 ## 			bc4: TCTGCC
@@ -170,11 +172,10 @@ foreach my $combination (@$combinations) {
 ### Count barcodes ###
 #----------------------------------------------------------------------------------------------------------------------------------------
 
-
 #status update
-my $total = `wc -l < $reads` / 4;
-print "finding barcodes in $total reads...\n";
-
+my $total = `wc -l < $reads`;
+$total /= 4;
+print "finding barcodes in $total reads\n";
 
 #look through fastq file and count reads where barcodes match a specified part of sequence
 my $n_lines = 0;
@@ -199,7 +200,6 @@ while (my $line = <READS>) {
 			if ($seq !~ /$fwdPrimer/i) { 
 				$seq = reverseComp($seq);
 			}
-			
 		}
 		
 		#to store references to arrays containing names of matched barcodes for each set
@@ -242,15 +242,11 @@ while (my $line = <READS>) {
 			
 			#get matches
 			my @setMatches;
-			
 			if ($regex) {
-			
 				foreach my $query (@setQueries) {
 					#do regex matching
 					push @setMatches, grep { $query =~ /$_/i } keys %{$barcs_yaml->{$set}->{"search"}};
-					
 				}
-				
 			}
 			else {
 				#check for barcode by hash lookup
@@ -268,10 +264,8 @@ while (my $line = <READS>) {
 			my %seen = ();
 			my @uniqSetMatches= grep { ! $seen{$_} ++ } @setMatches;
 			
-			
 			#push set matches to @matches
-			push @matches, \@uniqSetMatches;
-			
+			push @matches, \@uniqSetMatches;	
 		}
 		
 		#check matches and increment counter
@@ -279,25 +273,22 @@ while (my $line = <READS>) {
 	
 		#print out progress
 		$n_lines++;
-		if (($n_lines % $toprint) == 0) { print("processed $n_lines reads \n"); }
+		if (($n_lines % $toprint) == 0) { print("processed $n_lines reads\n"); }
+		if ($n_to_process) {
+			if ($n_lines == $n_to_process) { last; }
+		}
 		
 		#clear line buffer
 		@lines = ();
-		
     }
-    
-    if ($n_lines > 1000) { last; }
-
 }
 close(READS);
-
 
 #----------------------------------------------------------------------------------------------------------------------------------------
 ### Write counts to file  ###
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 #print out results
-
 @allBarcs = (); #need this for writing combination file
 my $countfile;
 
@@ -324,17 +315,15 @@ foreach my $set (@setOrder) {
 		my $seq = $barcs_yaml->{$set}->{"barcodes"}->{$name};
 		my $count = $barcs_yaml->{$set}->{"counts"}->{$name};
 		
-			#deal with "none"
+		#deal with "none"
 		if ($name =~ /none/) {$seq = "NA"; }
 		if ($name =~ /ambiguous/) {$seq = "NA"; }
 		
+		#print to terminal and file
 		print "\t$name ($seq) : $count\n"; 
 		print OUT "${name}\t${seq}\t${count}\n";
-		
 	}
-	
 	close(OUT);
-	
 }
 
 #get all possible combinations of barcodes which is the complete set of keys for %counts
@@ -388,18 +377,11 @@ sub printHelp {
 	print "\t--mismatches:\tAllow this many mismatches in barcodes [0]\n";
 	print "\t--extend_search:\tSearch this many bases each side of expected barcode positiohn [0]\n";
 	print "\t--fwdPrimer:\tOptionally provide sequence of foward primer common to all reads to improve search \n";
+	print "\t--n_reads:\tLimit analysis to the first n reads\n";
 	print "\t--help:\t\tPrint this help message and quit\n";
 
 	print "\n\tRequired arguments: barcodes, reads\n";
 	exit;
-}
-
-sub reverseComp {
-### return reverse compliment of sequence
-	my ($seq) = @_;
-	my $rev = reverse $seq;
-	$rev =~ tr/NATGCatgc/NTACGtacg/;
-	return($rev);
 }
 
 sub addAny {
@@ -420,130 +402,6 @@ sub addAny {
 	
 	return @new_array;
 	
-}
-
-sub incrementSetMatches {
-#increment counter in hash and write lines in array to outfile
-
-	my ($matchArrayRef, $barcs_yaml, $set, $combinedMatches) = @_;
-	
-	#check number of matches, increment counter and write to output file
-	#one match
-	if ( (scalar(@$matchArrayRef)) == 1) {
-
-		#increment counter
-		$barcs_yaml->{$set}->{"counts"}->{@{$matchArrayRef}[0]} += 1;
-		#push to combinedMatches
-		push @$combinedMatches, @{$matchArrayRef}[0];
-	}
-	#more than one match
-	elsif ((scalar(@$matchArrayRef)) > 1) { 
-		#increment counter
-		$barcs_yaml->{$set}->{"counts"}->{"ambiguous"} += 1;
-		#push to combinedMatches
-		push @$combinedMatches, "ambiguous";
-	}
-	#no matches
-	else { 
-		#increment counter
-		$barcs_yaml->{$set}->{"counts"}->{"none"} += 1;
-		#push to combinedMatches
-		push @$combinedMatches, "none";
-	}
-
-}
-
-sub checkAllMatches {
-#check the number of matches, increment and write to the appropriate counters and files
-
-	my ($matches, $barcs_yaml, $counts, $setOrder) = @_;
-	
-	#array containing unique entry to increment in combined counter
-	my @combinedMatches = ();
-	
-	#first increment individual counters in $barcs_yaml
-	foreach my $i (0..$#{$setOrder} ) {
-		my $set = $setOrder->[$i];
-		my $matchRef = $matches->[$i];
-		incrementSetMatches($matchRef, $barcs_yaml, $set, \@combinedMatches);
-	}
-	
-	@combinedMatches = reverse @combinedMatches;
-	
-	#then increment combined counter
-	incrementValue($counts, \@combinedMatches);
-
-}
-
-sub setValue {
-#create or update one leaf in recursive hash
-#pass in reference to hash, array with each element corresponding to a key
-#and value to set
-
-	my ($ref, $arrayRef, $value) = @_;
-	
-	my $tail = pop @{$arrayRef};
-	my $cursor = $ref;
-	
-	#iterate over levels
-	foreach my $level (@{$arrayRef}) {
-		#create a new hash if there isn't one
-		$cursor->{$level} ||= {};
-		#traverse down
-		$cursor = $cursor->{$level};
-	}
-	
-	#set value
-	$cursor->{$tail} = $value;
-
-}
-
-sub incrementValue {
-#create or update one leaf in recursive hash
-#pass in reference to hash, array with each element corresponding to a key
-#and value to set
-
-	my ($ref, $arrayRef) = @_;
-	
-	#tail will be leaf key
-	my $tail = pop @{$arrayRef};
-	#cursor is current location in hash
-	my $cursor = $ref;
-	
-	#iterate over levels
-	foreach my $level (@{$arrayRef}) {
-
-		#traverse down
-		$cursor = $cursor->{$level};
-	}
-	
-	#set value
-	$cursor->{$tail} += 1;
-
-}
-
-sub getValue {
-#create or update one leaf in recursive hash
-#pass in reference to hash, array with each element corresponding to a key
-#and value to set
-
-	my ($ref, $arrayRef) = @_;
-	
-	#tail will be leaf key
-	my $tail = pop @{$arrayRef};
-	#cursor is current location in hash
-	my $cursor = $ref;
-	
-	#iterate over levels
-	foreach my $level (@{$arrayRef}) {
-
-		#traverse down
-		$cursor = $cursor->{$level};
-	}
-	
-	#return value
-	return $cursor->{$tail};
-
 }
 
 sub cartProduct {
@@ -582,4 +440,136 @@ sub cartProduct {
 	}
 	
 	return $outArrayRef;
+}
+
+sub checkAllMatches {
+#check the number of matches, increment and write to the appropriate counters and files
+
+	my ($matches, $barcs_yaml, $counts, $setOrder) = @_;
+	
+	#array containing unique entry to increment in combined counter
+	my @combinedMatches = ();
+	
+	#first increment individual counters in $barcs_yaml
+	foreach my $i (0..$#{$setOrder} ) {
+		my $set = $setOrder->[$i];
+		my $matchRef = $matches->[$i];
+		incrementSetMatches($matchRef, $barcs_yaml, $set, \@combinedMatches);
+	}
+	
+	@combinedMatches = reverse @combinedMatches;
+	
+	#then increment combined counter
+	incrementValue($counts, \@combinedMatches);
+
+}
+
+sub getValue {
+#create or update one leaf in recursive hash
+#pass in reference to hash, array with each element corresponding to a key
+#and value to set
+
+	my ($ref, $arrayRef) = @_;
+	
+	#tail will be leaf key
+	my $tail = pop @{$arrayRef};
+	#cursor is current location in hash
+	my $cursor = $ref;
+	
+	#iterate over levels
+	foreach my $level (@{$arrayRef}) {
+
+		#traverse down
+		$cursor = $cursor->{$level};
+	}
+	
+	#return value
+	return $cursor->{$tail};
+
+}
+
+sub incrementSetMatches {
+#increment counter in hash and write lines in array to outfile
+
+	my ($matchArrayRef, $barcs_yaml, $set, $combinedMatches) = @_;
+	
+	#check number of matches, increment counter and write to output file
+	#one match
+	if ( (scalar(@$matchArrayRef)) == 1) {
+
+		#increment counter
+		$barcs_yaml->{$set}->{"counts"}->{@{$matchArrayRef}[0]} += 1;
+		#push to combinedMatches
+		push @$combinedMatches, @{$matchArrayRef}[0];
+	}
+	#more than one match
+	elsif ((scalar(@$matchArrayRef)) > 1) { 
+		#increment counter
+		$barcs_yaml->{$set}->{"counts"}->{"ambiguous"} += 1;
+		#push to combinedMatches
+		push @$combinedMatches, "ambiguous";
+	}
+	#no matches
+	else { 
+		#increment counter
+		$barcs_yaml->{$set}->{"counts"}->{"none"} += 1;
+		#push to combinedMatches
+		push @$combinedMatches, "none";
+	}
+
+}
+
+sub incrementValue {
+#create or update one leaf in recursive hash
+#pass in reference to hash, array with each element corresponding to a key
+#and value to set
+
+	my ($ref, $arrayRef) = @_;
+	
+	#tail will be leaf key
+	my $tail = pop @{$arrayRef};
+	#cursor is current location in hash
+	my $cursor = $ref;
+	
+	#iterate over levels
+	foreach my $level (@{$arrayRef}) {
+
+		#traverse down
+		$cursor = $cursor->{$level};
+	}
+	
+	#set value
+	$cursor->{$tail} += 1;
+
+}
+
+sub setValue {
+#create or update one leaf in recursive hash
+#pass in reference to hash, array with each element corresponding to a key
+#and value to set
+
+	my ($ref, $arrayRef, $value) = @_;
+	
+	my $tail = pop @{$arrayRef};
+	my $cursor = $ref;
+	
+	#iterate over levels
+	foreach my $level (@{$arrayRef}) {
+		#create a new hash if there isn't one
+		$cursor->{$level} ||= {};
+		#traverse down
+		$cursor = $cursor->{$level};
+	}
+	
+	#set value
+	$cursor->{$tail} = $value;
+
+}
+
+sub reverseComp {
+### return reverse compliment of sequence
+	my ($seq) = @_;
+	my $rev = reverse $seq;
+	$rev =~ tr/NATGCatgc/NTACGtacg/;
+	return($rev);
 }
