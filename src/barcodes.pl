@@ -192,7 +192,7 @@ while (my $line = <READS>) {
 		#get read sequence from @lines
 		my $seq = $lines[1];
 		chomp $seq;
-		my $line_len = length($line); #get length of line
+		my $line_len = length($seq); #get length of line
 		
 		#if we know forward primer, check if read is forward or reverse
 		if ($fwdPrimer) {
@@ -202,7 +202,7 @@ while (my $line = <READS>) {
 			
 		}
 		
-		#to store references to arrays containing queries for each set
+		#to store references to arrays containing names of matched barcodes for each set
 		@matches = ();
 		
 		#get queries from each set and do search
@@ -217,11 +217,21 @@ while (my $line = <READS>) {
 			}
 		
 			#get start and stop of part of read to search
-			my $start = $barcs_yaml->{$set}->{"start"} - $mismatches;
+			my $start = $barcs_yaml->{$set}->{"start"} - $extend_search;
 			if ($start < 0) { $start = 0; }
 			if ($start > $line_len) { $start = $line_len; }
-			my $length = $barcs_yaml->{$set}->{"length"} + $mismatches;
+			my $length = $barcs_yaml->{$set}->{"length"} + ($extend_search * 2);
 			if ($line_len < ($length + $start)) { $length = $line_len - $start; }
+			
+			#get relevant part of read
+			my @setQueries;
+			push @setQueries, uc(substr($seq, $start, $length));
+			
+			#do the same if we need to check the reverse reads
+			unless ($fwdPrimer) {
+				
+				push @setQueries, reverseComp(uc(substr($seq, -1*($line_len - $start), $length)));
+			}
 			
 			#if string will be zero length, don't bother
 			if ($start == $line_len) { 
@@ -229,10 +239,6 @@ while (my $line = <READS>) {
 				next; 
 			} #if string will be zero length, don't bother
 			
-			#get relevant part of read
-			my @setQueries;
-			push @setQueries, uc(substr($seq, $start, $length));
-			unless ($fwdPrimer) { push @setQueries, reverseComp(uc(substr($seq, $line_len - $start, $length))); }
 			
 			#get matches
 			my @setMatches;
@@ -242,6 +248,7 @@ while (my $line = <READS>) {
 				foreach my $query (@setQueries) {
 					#do regex matching
 					push @setMatches, grep { $query =~ /$_/i } keys %{$barcs_yaml->{$set}->{"search"}};
+					
 				}
 				
 			}
@@ -249,18 +256,26 @@ while (my $line = <READS>) {
 				#check for barcode by hash lookup
 				foreach my $query (@setQueries) {
 					if (exists $barcs_yaml->{$set}->{"search"}->{$query}) {
-						push @setMatches, $query;
 					}
 				}
 			}
 			
+			#get unique names from query matches
+			foreach my $match (@setMatches) {
+				$match = $barcs_yaml->{$set}->{"search"}->{$match};
+			}
+			my %seen = ();
+			@setMatches = grep { ! $seen{$_} ++ } @setMatches;
+			
+			
 			#push set matches to @matches
 			push @matches, \@setMatches;
+			
+			
 		}
 		
 		#check matches and increment counter
 		checkAllMatches(\@matches, $barcs_yaml, \%counts, \@setOrder);
-
 	
 		#print out progress
 		$n_lines++;
@@ -415,12 +430,11 @@ sub incrementSetMatches {
 	#check number of matches, increment counter and write to output file
 	#one match
 	if ( (scalar(@$matchArrayRef)) == 1) {
-		#get name of barcode
-		my $barcName = $barcs_yaml->{$set}->{"search"}->{$matchArrayRef->[0]};
+
 		#increment counter
-		$barcs_yaml->{$set}->{"counts"}->{$barcName} += 1;
+		$barcs_yaml->{$set}->{"counts"}->{@{$matchArrayRef}[0]} += 1;
 		#push to combinedMatches
-		push @$combinedMatches, $barcName;
+		push @$combinedMatches, @{$matchArrayRef}[0];
 	}
 	#more than one match
 	elsif ((scalar(@$matchArrayRef)) > 1) { 

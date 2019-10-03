@@ -67,6 +67,6 @@ rule count:
 	shell:
 		"""
 		gunzip -f {input}
-		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --fwdPrimer {params.prim} --mismatches {params.mismatches} --expand_seach {params.extend} --prefix {wildcards.sample}
+		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --fwdPrimer {params.prim} --mismatches {params.mismatches} --extend_seach {params.extend} --prefix {wildcards.sample}
 		cp out/{wildcards.sample}/{wildcards.sample}_counts.txt out/
 		"""

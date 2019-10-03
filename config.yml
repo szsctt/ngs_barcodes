@@ -10,6 +10,8 @@ MIX-270619_sample_combined:
     adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     #adapters used for sequencing
     adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     #required for better merging   
     amplicon_length: 155                              #of amplicon including length of sample barcodes (if present)
+    extend: 5                                         #number of bases to extend search beyond expected barcode position (optional)
+    mismatches: 1                                     #number of mismatches allowed (optional)
     fwdPrimer: "gctggagttcgtgaccgccg"                 #optionally specify forward primer common to all reads (ie excluding any barcodes)
 
     # barcode information
@@ -27,4 +29,6 @@ MIX-270619_combined:
     adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"  
     adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"  
     amplicon_length: 150                             
-    barcodes: "/Users/sco305/barcodes/example_data/MIX-270619_barcodes.yml"                                                   
+    barcodes: "/Users/sco305/barcodes/example_data/MIX-270619_barcodes.yml"      
+    extend: 5                                         
+    mismatches: 1                                                                                
