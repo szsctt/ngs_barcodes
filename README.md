@@ -42,6 +42,17 @@ Sequences may contain any number of barcodes.  Provide barcodes for each sample 
 
 There are a number of optional parameters which may be set for each sample.  These are `extend_search`, `mismatches` and `fwdPrimer`.  If a number of `mismatches` is specified, that number of mismatches will be allowed during the search. If the forward primer used for amplification (`fwdPrimer`) is specified (case insensitive), it will be used during barcode counting to check the orientation of the read.  A number is given for `extend_search`, the region of the read searched for the barcode will be extended that number of bases either side of the expected position of the barcode. 
 
+Note that finding barcodes is significantly faster if the search is not extended and no mismatches are allowed.  
+
+When optimising parameters, the perl script can be run on the command line with the merged, filtered reads.  From the installation directory, run 
+```
+perl src/barcodes.pl --reads <path_to_reads> --barcodes <path_to_barcodes_yaml>
+```
+To speed things up, limit the search to the first n reads using the `--n_reads` argument:
+```
+perl src/barcodes.pl --reads <reads> --barcodes <barcodes_yaml> --n_reads <num>
+```
+
 ## Running the pipeline
 
 Once the config file and barcode yaml files has been correctly specified, run the pipeline from the installation directory:
@@ -51,4 +62,10 @@ cd <install_directory>
 ./barcodes
 ```
 
-The results for each dataset are saved in sub-directories of the `out` directory.  For each sample, a merged and filtered fastq are saved, as well as counts for each barcode by set as well as all combinations of barcodes
+Snakemake options can also be passed in.  For example, 
+```
+./barcodes -j 2
+```
+will run the pipeline with at most two jobs in parallel.  See the [snakemake docs](https://snakemake.readthedocs.io/en/stable/executable.html) for more information.
+
+The results for each dataset are saved in sub-directories of the `out` directory.  For each sample, a merged and filtered fastq are saved, as well as counts for each barcode by set as well as all combinations of barcodes.  The combinations are saved in tab-seperated format in the file `out/{sample}_counts.txt`, and the counts for each set of barcodes are saved in the files `out/{sample}/{sample}_{barcode_set_name}_counts.txt`.
