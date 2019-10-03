@@ -356,7 +356,7 @@ print OUT $header;
 foreach my $combination (@$combinations) {
 
 	#join names
-	my $toprint = join('\t', @$combination);
+	my $toprint = join("\t", @$combination);
 	
 	#write value
 	my $count = getValue(\%counts, $combination);
@@ -468,6 +468,7 @@ sub checkAllMatches {
 		incrementSetMatches($matchRef, $barcs_yaml, $set, \@combinedMatches);
 	}
 	
+	@combinedMatches = reverse @combinedMatches;
 	
 	#then increment combined counter
 	incrementValue($counts, \@combinedMatches);
