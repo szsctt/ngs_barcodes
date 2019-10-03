@@ -1,18 +1,30 @@
-#list each sample
-MIX-270619_combined:
+#s pecify the name of the files containing the reads before the suffixes "_R1.fastq.gz" and "_R2.fastq.gz"
+MIX-270619_combined_sample:
 
     # read information
+    ## provide path to folder containing reads and other necessary information below
     ## assume paired-end amplicon sequencing
-    path: "~/barcodes/test_data"                    #absolute path to folder containing reads
+    path: "/Users/sco305/barcodes/example_data/"      #absolute path to folder containing reads
     R1_pattern: "_R1.fastq.gz"                        #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_R2.fastq.gz"
-    adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA     #adapters used for sequencing
-    adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT    
-    fwdPrimer: gctggagttcgtgaccgccg                 #need to know this to know if merged reads are forward or reverse
-    amplicon_length: 150                            #length of reads
-    mismatches: 1                                   #optionally, state number of mismatches to allow
-    extend: 1                                       #optionally, state number of bases to extend either side of expected position in search
-    barcodes: "~/barcodes/MIX-270619_sample_barcodes.yml"        #path to file containing capsid barcodes
+    R2_pattern: "_R2.fastq.gz"                        #where sample is specified as the key to this sub-dictionary
+    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     #adapters used for sequencing
+    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     #required for better merging   
+    amplicon_length: 155                              #of amplicon including length of sample barcodes (if present)
+    fwdPrimer: "gctggagttcgtgaccgccg"                 #optionally specify forward primer common to all reads (ie excluding any barcodes)
+
+    # barcode information
+    ## barcodes are specified in seperate yaml (see example_barcodes.yml)
+    ## specify path to this yaml
+    barcodes: "/Users/sco305/barcodes/example_data/MIX-270619_sample_barcodes.yml"        #path to file containing capsid barcodes  
+
 
     
-                                                     
+# a second sample
+MIX-270619_combined:
+    path: "/Users/sco305/barcodes/example_data/"         
+    R1_pattern: "_R1.fastq.gz"                      
+    R2_pattern: "_R2.fastq.gz"                      
+    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"  
+    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"  
+    amplicon_length: 150                             
+    barcodes: "/Users/sco305/barcodes/example_data/MIX-270619_barcodes.yml"                                                   
