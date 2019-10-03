@@ -1,59 +1,69 @@
 #### python modules ####
 
-import glob
-import os
-import pathlib
+import yaml
+import sys
+import itertools
 
 
-#### CONFIG FILE ####
-#which datasets are to be aligned to which hosts and viruses are specified in dsets.yaml
+#### LOAD CONFIG FILE AND BARCODES YAML ####
+# load config file specifiying samples and parameters
 configfile: "config.yml"
 
-#format of config file:
-#dataset1:
-#    path: "~/OneDrive - CSIRO/Projects/shuf/barcodes/test_data/"
-#    capsid_barcodes: "~/OneDrive - CSIRO/Projects/shuf/barcodes/test_data/BC270619.txt"
-#    sample_barcodes: None
-#    R1_pattern: _R1.fastq.gz
-#    R2_pattern: _R2.fastq.gz
-#    adapter1: AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
-#    adapter2: AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
-
-DATASETS = [] #to store datasets
-SAMPLES = [] #to store samples
-
-for dataset in config:
-	#get files in directory and strip off specified suffix (eg "_1.fastq.gz")
-	suffix = config[dataset]["R1_pattern"]
-	p=pathlib.Path(config[dataset]["path"])
-	print(f"searching for samples in {str(p)}/*{suffix}")
-	samples = [os.path.basename(f)[:len(suffix)*-1] for f in p.glob(f"*{suffix}")]
-	if not samples:
-		print(f"can't find any samples for dataset {dataset}")
-	for sample in samples:
-		DATASETS.append(dataset)
-		SAMPLES.append(sample)
+# construct a dictionary of samples and load the yaml for each
+sample_barcodes = {}
+filenames = {}
+for sample in config:
+	#read barcode yaml
+	with open(config[sample]["barcodes"], 'r') as handle:
+		try:
+			#load yaml
+			sample_barcodes[sample] = yaml.safe_load(handle)
+			
+		# handle any yaml errors
+		except yaml.YAMLError as exc:
+			print(exc)
+			
+	#check that number of starts specified in config matches number of sets of barcodes
+	#specified in barcode yaml
+	if not(len(sample_barcodes[sample]) == len(config[sample]["barcodes_start"])):
+		raise InputError(f"Number of sets of barcodes in yaml must match number of starts specified in config file for sample {sample}")
+	
+	#populate filenames dict with filenames for each barcode set
+	filenames[sample] = {}
+	filenames[sample]["counter"] = 0 #a counter for later on
+	current_filenames = [""] #to store  filenames for the current set of barcodes
+	
+	#add to filenames for each set of barcodes
+	for set_name in config[sample]["barcodes_start"].keys():
+	
+		#add each barcode to each filename
+		current_filenames = [string + "_" for string in current_filenames]
+		current_filenames = list(itertools.product(current_filenames, sample_barcodes[sample][set_name]))
+		current_filenames = [ "".join(list) for list in current_filenames ]
+				
+		#add to filenames dict
+		filenames[sample][set_name] = current_filenames 
 		
 		
 #### target files ####
 rule all:
 	input: 
-		expand("out/{dataset}/{sample}.counts.txt", zip, dataset = DATASETS, sample = SAMPLES)
+		expand("out/{sample}/counts.txt", zip, sample = config.keys())
 		
 #### merging ####
 
 #merge overlapping reads
 rule merge:
 	input:
-		r1 = lambda wildcards: config[wildcards.dataset]["path"] + wildcards.sample + config[wildcards.dataset]["R1_pattern"],
-		r2 = lambda wildcards: config[wildcards.dataset]["path"] + wildcards.sample + config[wildcards.dataset]["R2_pattern"]
+		r1 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R1_pattern"],
+		r2 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R2_pattern"]
 	output:
-		merged = "out/{dataset}/{sample}.merged.fastq.gz",
-		proc_r1 = "out/{dataset}/{sample}.unmerged_R1.fastq.gz",
-		proc_r2 = "out/{dataset}/{sample}.unmerged_R2.fastq.gz"
+		merged = "out/{sample}/{sample}.merged.fastq.gz",
+		proc_r1 = "out/{sample}/{sample}.unmerged_R1.fastq.gz",
+		proc_r2 = "out/{sample}/{sample}.unmerged_R2.fastq.gz"
 	params:
-		A = lambda wildcards: config[wildcards.dataset]["adapter1"],
-		B = lambda wildcards: config[wildcards.dataset]["adapter2"]
+		A = lambda wildcards: config[wildcards.sample]["adapter1"],
+		B = lambda wildcards: config[wildcards.sample]["adapter2"]
 	shell:
 		"""
 		echo {params.A}
@@ -64,11 +74,11 @@ rule merge:
 #retain only reads that are the correct length
 rule filter:
 	input:
-		"out/{dataset}/{sample}.merged.fastq.gz"
+		"out/{sample}/{sample}.merged.fastq.gz"
 	output:	
-		"out/{dataset}/{sample}.merged.filtered.fastq.gz"
+		"out/{sample}/{sample}.merged.filtered.fastq.gz"
 	params:
-		len = lambda wildcards: config[wildcards.dataset]["amplicon_length"]
+		len = lambda wildcards: config[wildcards.sample]["amplicon_length"]
 	shell:
 		"""
 		bbduk.sh in={input} out={output} minlen={params.len} maxlen={params.len}
@@ -77,14 +87,12 @@ rule filter:
 #run script to count barcodes
 rule count:
 	input:
-		"out/{dataset}/{sample}.merged.filtered.fastq.gz"
+		"out/{sample}/{sample}.merged.filtered.fastq.gz"
 	output:
-		"out/{dataset}/{sample}.counts.txt"
+		"out/{sample}/{sample}.counts.txt"
 	params:
-		bc_file = lambda wildcards: config[wildcards.dataset]["capsid_barcodes"],
-		start = lambda wildcards: config[wildcards.dataset]["capsid_start"],
-		length = lambda wildcards: config[wildcards.dataset]["capsid_length"],
-		prim = lambda wildcards: config[wildcards.dataset]["fwdPrimer"],
+		barcodes = lambda wildcards: sample_barcodes{wildcards.sample},
+		starts = lambda wildcards: config[wildcards.sample]["capsid_start"],
 		unzipped_reads = lambda wildcards, input: str(input)[:-3],
 	shell:
 		"""
