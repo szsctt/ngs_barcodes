@@ -31,8 +31,6 @@ rule merge:
 		B = lambda wildcards: config[wildcards.sample]["adapter2"]
 	shell:
 		"""
-		echo {params.A}
-		echo {params.B}
 		bbmerge.sh in1="{input.r1}" in2="{input.r2}" out="{output.merged}" outu1="{output.proc_r1}" outu2="{output.proc_r2}" adapter1={params.A} adapter2={params.B}
 		"""
 
@@ -70,5 +68,5 @@ rule count:
 		"""
 		gunzip -f {input}
 		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --fwdPrimer {params.prim} --mismatches {params.mismatches} --expand_seach {params.extend} --prefix {wildcards.sample}
-		cp out/{wildcards.sample}/{wildcards.sample}_counts.txt ..
+		cp out/{wildcards.sample}/{wildcards.sample}_counts.txt out/
 		"""
