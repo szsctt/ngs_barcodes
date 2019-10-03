@@ -111,6 +111,6 @@ sub reverseComp {
 ### return reverse compliment of sequence
 	my ($seq) = @_;
 	my $rev = reverse $seq;
-	$rev =~ tr/ATGCatgc/TACGtacg/;
+	$rev =~ tr/NATGCatgc/NTACGtacg/;
 	return($rev);
 }
