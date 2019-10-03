@@ -44,7 +44,7 @@ if ($help) { printHelp(); }
 unless ($barcodes and $reads and $outpath) { printHelp(); }
 
 #check outpath ends wihth "/"
-unless ($outpath =~ /$\//) { $outpath = $outpath."/"; }
+unless ($outpath =~ /\/$/) { $outpath = $outpath."/"; }
 
 #if we want to check for mismatches or extend the search use a regex 
 #otherwise use hash lookup
@@ -352,7 +352,6 @@ foreach my $combination (@$combinations) {
 
 	#print to outfile
 	print OUT "${toprint}\t${count}\n";
-
 }
 		
 close(OUT);
