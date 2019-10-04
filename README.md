@@ -44,13 +44,21 @@ There are a number of optional parameters which may be set for each sample.  The
 
 Note that finding barcodes is significantly faster if the search is not extended and no mismatches are allowed.  
 
-When optimising parameters, the perl script can be run on the command line with the merged, filtered reads.  From the installation directory, run 
+When optimising parameters, the perl script can be run on the command line with the merged, filtered reads.  First activate the conda environment contataining perl modules:
+```
+conda activate barcodes
+```
+Then, from the installation directory run :
 ```
 perl src/barcodes.pl --reads <path_to_reads> --barcodes <path_to_barcodes_yaml>
 ```
 To speed things up, limit the search to the first n reads using the `--n_reads` argument:
 ```
 perl src/barcodes.pl --reads <reads> --barcodes <barcodes_yaml> --n_reads <num>
+```
+All possible arguments will can be displayed by running:
+```
+perl src/barcodes/pl --help
 ```
 
 ## Running the pipeline
