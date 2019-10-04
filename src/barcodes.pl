@@ -354,7 +354,7 @@ else { $countfile = "${outpath}counts.txt"; }
 
 #open file for combined counts
 open(OUT, ">", $countfile) || die "Could not open output file: $countfile\n";
-my $header = ("name\tseq\t" x scalar(@setOrder))."count\n";
+my $header = ("name\t" x scalar(@setOrder))."count\n";
 print OUT $header;
 
 #then get every value from nested hash and write to file
