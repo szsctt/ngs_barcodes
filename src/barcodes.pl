@@ -181,7 +181,8 @@ print "finding barcodes in $total reads\n";
 #for each read, add to hash with sequence of read as key and count of read as value
 my %reads;
 my @lines;
-my $i;
+my $i = 0;
+my $dropped = 0;
 
 open(READS, $reads) || die "Could not open read file: $reads\n";
 while (my $line = <READS>) {
@@ -196,9 +197,13 @@ while (my $line = <READS>) {
 		if ($fwdPrimer) {
 			if ($line !~ /$fwdPrimer/i) { 
 				$line = reverseComp($line);
+				#if still doesn't match, drop it
+				unless ($line =~ /$fwdPrimer/i) { 
+					$dropped += 1;
+					next;
+				 }
 			}
 		}
-		
 		
 		#add sequence to hash and increment counter
 		if (exists $reads{$line}) { $reads{$line} += 1; }
@@ -212,8 +217,11 @@ while (my $line = <READS>) {
 
 
 close(READS);
+
+print "dropped $dropped reads that don't match the forward primer after reversing\n";
+
 my $n_uniq = scalar keys %reads;
-print "$n_uniq unique reads to process\n";
+print "after de-duplicaton, $n_uniq unique reads to process\n";
 
 #look through %reads and count reads where barcodes match a specified part of sequence
 my $n_lines = 0;

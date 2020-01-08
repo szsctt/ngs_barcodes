@@ -1,9 +1,3 @@
-#### python modules ####
-
-import yaml
-import sys
-import itertools
-
 
 #### load config file ####
 # load config file specifiying samples and parameters
@@ -61,12 +55,13 @@ rule count:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
 		unzipped_reads = lambda wildcards, input: str(input)[:-3],
 		prim = lambda wildcards: config[wildcards.sample]["fwdPrimer"] if "fwdPrimer" in config[wildcards.sample] else "",
-		extend = lambda wildcards: config[wildcards.sample]["extend"] if "extend" in config[wildcards.sample] else "",
-		mismatches = lambda wildcards: config[wildcards.sample]["mismatches"] if "mismatches" in config[wildcards.sample] else ""
+		extend = lambda wildcards: config[wildcards.sample]["extend"] if "extend" in config[wildcards.sample] else 0,
+		mismatches = lambda wildcards: config[wildcards.sample]["mismatches"] if "mismatches" in config[wildcards.sample] else 0
 			
 	shell:
 		"""
 		gunzip -f {input}
-		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --fwdPrimer {params.prim} --mismatches {params.mismatches} --extend_seach {params.extend} --prefix {wildcards.sample}
-		cp out/{wildcards.sample}/{wildcards.sample}_counts.txt out/
+		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --mismatches {params.mismatches} --extend_search {params.extend} --prefix {wildcards.sample} --fwdPrimer {params.prim}
+		(head -n 1 out/{wildcards.sample}/{wildcards.sample}_counts.txt && tail -n +2 out/{wildcards.sample}/{wildcards.sample}_counts.txt | sort) > out/{wildcards.sample}_counts.txt
 		"""
+		

@@ -14,7 +14,7 @@ else
 fi
 
 BARCODES_ENV=barcodes
-${CONDA_BASE}/bin/conda env create -n ${BARCODES_ENV} -f setup/env.yml
+${CONDA_BASE}/bin/conda env create -n ${BARCODES_ENV} -f env.yml
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}
 cat > "${HOME}/.barcodesrc" <<EOF
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}
