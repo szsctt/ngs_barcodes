@@ -17,9 +17,9 @@ rule merge:
 		r1 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R1_pattern"],
 		r2 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R2_pattern"]
 	output:
-		merged = "out/{sample}/{sample}.merged.fastq.gz",
-		proc_r1 = "out/{sample}/{sample}.unmerged_R1.fastq.gz",
-		proc_r2 = "out/{sample}/{sample}.unmerged_R2.fastq.gz"
+		merged = temp("out/{sample}/{sample}.merged.fastq.gz"),
+		proc_r1 = temp("out/{sample}/{sample}.unmerged_R1.fastq.gz"),
+		proc_r2 = temp("out/{sample}/{sample}.unmerged_R2.fastq.gz")
 	params:
 		A = lambda wildcards: config[wildcards.sample]["adapter1"],
 		B = lambda wildcards: config[wildcards.sample]["adapter2"]
@@ -35,7 +35,7 @@ rule filter:
 	input:
 		"out/{sample}/{sample}.merged.fastq.gz"
 	output:	
-		"out/{sample}/{sample}.merged.filtered.fastq.gz"
+		temp("out/{sample}/{sample}.merged.filtered.fastq.gz")
 	params:
 		len = lambda wildcards: config[wildcards.sample]["amplicon_length"]
 	shell:
