@@ -37,10 +37,11 @@ rule filter:
 	output:	
 		temp("out/{sample}/{sample}.merged.filtered.fastq.gz")
 	params:
-		len = lambda wildcards: config[wildcards.sample]["amplicon_length"]
+		min_len = lambda wildcards: config[wildcards.sample]["min_length"],
+		max_len = lambda wildcards: config[wildcards.sample]["max_length"]
 	shell:
 		"""
-		bbduk.sh in={input} out={output} minlen={params.len} maxlen={params.len}
+		bbduk.sh in={input} out={output} minlen={params.min_len} maxlen={params.max_len}
 		"""
 		
 #### counting ####

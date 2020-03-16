@@ -1,158 +1,20 @@
 #s pecify the name of the files containing the reads before the suffixes "_R1.fastq.gz" and "_R2.fastq.gz"
-MIX-270619_combined:
+test:
 
     # read information
     ## provide path to folder containing reads and other necessary information below
     ## assume paired-end amplicon sequencing
-    path: "/Users/sco305/barcodes/example_data/"      #absolute path to folder containing reads ## no spaces or special characters!
-    R1_pattern: "_R1.fastq.gz"                        #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_R2.fastq.gz"                        #where sample is specified as the key to this sub-dictionary
+    path: "data/reads/"                              #absolute path to folder containing reads ## no spaces or special characters!
+    R1_pattern: "_R1.fastq"                        #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
+    R2_pattern: "_R2.fastq"                        #where sample is specified as the key to this sub-dictionary
     adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     #adapters used for sequencing
     adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     #required for better merging   
-    amplicon_length: 150                              #of amplicon including length of sample barcodes (if present)
-    fwdPrimer: "gctggagttcgtgaccgccg"                 #optionally specify forward primer common to all reads (ie excluding any barcodes)
+    min_length: 150                                   #minimum length of amplicon, including sample barcodes (if present)
+    max_length: 155                                   #maximum length of amplicon, including sample barcodes (if present)
+    fwdPrimer: "ACCACCAGCACCAGAACCTGG"                 #optionally specify forward primer common to all reads (ie excluding any barcodes)
 
     # barcode information
     ## barcodes are specified in seperate yaml (see example_barcodes.yml)
     ## provide path to this yaml
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml"        #path to file containing capsid barcodes  
+    barcodes: "example_barcodes.yml"        #path to file containing capsid barcodes  
     
-294-HU-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                          
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml"     
-    
-294-HU-R-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/" 
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                          
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml"    
-    
-294-MOU-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/" 
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                            
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml" 
-    
-294-MOU-R-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"  
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                           
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml" 
-
-171-HU-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                              
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes:   "/Users/sco305/barcodes/forsuzanne/BCCLAUS.yml"                                                                       
-
-171-HU-R-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                             
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes:   "/Users/sco305/barcodes/forsuzanne/BCCLAUS.yml"  
-
-171-MO-R_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                            
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes:   "/Users/sco305/barcodes/forsuzanne/BCCLAUS.yml"  
-
-171-MO-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                            
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes:   "/Users/sco305/barcodes/forsuzanne/BCCLAUS.yml"  
-    
-PRE-6619_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"    
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                             
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes:  "/Users/sco305/barcodes/forsuzanne/BCCLAUS.yml"  
-    
-201-MOU-R-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                            
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml"   
-    
-201-MOU-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                           
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml"   
-    
-201-HU-R-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                          
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml" 
-    
-201-HU-D-POS_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                           
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml" 
-    
-201-HUD-POSNEW_combined:
-    path: "/Users/sco305/barcodes/forsuzanne/"     
-    R1_pattern: "_R1.fastq.gz"                        
-    R2_pattern: "_R2.fastq.gz"                        
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"     
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"     
-    amplicon_length: 150                          
-    fwdPrimer: "gctggagttcgtgaccgccg"               
-    barcodes: "/Users/sco305/barcodes/forsuzanne/BcciAAV.yml" 

@@ -1,11 +1,20 @@
+#!/usr/bin/perl
+# It's not a bug, it's a feature
+
+
 # script to count barcodes in NGS data
-# each read contains a barcode at a location defined by start
+# a barcode is a sequence within a read that we want to count instances of
+# there may be more than one set barcodes per read
+#
+# barcodes can be 'variable' or 'constant'
+# a 'constant' barcode is specified by a list of sequences (a 'set')
+# matching can either be exact or allow mismatches
+# a 'variable' barcode is specified by constant sequences either side of the barcode
+# the set of barcodes are of variable length and sequence (eg insertion libraries)
+#
 # each set of barcodes is specified by a yaml file, and its start coordinate within the read must be given
 # output file with counts for each barcode by set and combination of barcodes
 # allow for mismatches and variability in barcode location
-
-#!/usr/bin/perl
-# It's not a bug, it's a feature
 
 use strict;
 use warnings;
@@ -17,15 +26,14 @@ use Data::Dumper;
 # allocate
 my $barcodes; # barcodes (yml file)
 my $reads; # reads
-my $extend_search = 0; #extend search this many bases either side of the expected position of the barcode
+#my $extend_search = 0; # extend search this many bases either side of the expected position of the barcode
 my $prefix; # prefix for output file names [""]
-my $outpath = "."; #output folder for counts and read files
-my $mismatches = 0; #number of allowed mismatches
-my $fwdPrimer; #forward primer to check if read is forward or reverse
+my $outpath = "."; # output folder for counts and read files
+my $mismatches = 0; # number of allowed mismatches in constant barcodes
+my $fwdPrimer; # forward primer to check if read is forward or reverse
 my $n_to_process;
-my $toprint = 10000; #for updates every $toPrint reads
+my $toprint = 10000; # for updates every $toPrint reads
 my $help;
-
 
 # get inputs from command line
 GetOptions('barcodes=s' 		=> \$barcodes,
@@ -65,22 +73,38 @@ my $printFastq;
 #----------------------------------------------------------------------------------------------------------------------------------------
 
 ## barcode yaml should contain a hash of barcode sets with names and sequences for each set of barcodes
+## barcodes may be either 'constant' barcodes, in which the barcode itself is specified
+## or 'variable', in which the sequence either side of the barcode is specified (and the barcode itself may be anything)
 ##
-## example yaml
+## example yaml: two constant barcodes
 ##
 ##	barcodes1:
+##		type: constant
 ##		start: 72
 ##		barcodes:
 ## 			bc1: ATCTAT
 ## 			bc2: TCTGAA
 ## 			bc3: TTAGGA
 ##	barcodes2:
+##		type: constant
 ##		start: 0
 ##		barcodes:
 ## 			bc3: ACCTCT
 ## 			bc4: TCTGCC
 ## 			bc5: GTAGGG
-
+##
+## 
+## example yaml: one constant and one variable barcode
+## barcodes1: 
+##    type: constant
+##    start: 1 #expected start base of this barcode in the read
+##    barcodes:
+##        plasmid: CGTAG
+##        vector: TCCTA
+## barcodes2:
+##    type: variable 
+##    before: TCTCTACAAGCAAATCTCCAGCC
+##    after: GGAGCTTCAAACGACAACCACTACTTTGG
 
 ## read yaml files 
 
@@ -88,33 +112,64 @@ my $printFastq;
 my $barcs_yaml;
 $barcs_yaml = LoadFile($barcodes);
 
-my @allBarcs; #need this for constructing barcode combination counter
-my @setOrder; #keep track of order because lookup is random
+my @allBarcs; # need this for constructing barcode combination counter
+my @setOrder; # keep track of order of sets of barcodes because hash lookup is random
+my @barcsTypes; # keep track of which type of barcode each set is (variable or constant)
 
-#add extra information to yaml needed for search
+
+# for each set of barcodes, get if the barcode is constant or variable
+# because we need to track every combination of barcodes, but we don't know
+# what the variable barcodes are before we start, only allow one set of variable barcodes
+# per barcodes yaml
+
+foreach my $set (keys %{ $barcs_yaml}) {
+	
+	# because hash lookup is random, need to keep track of order for later
+	push @setOrder, $set;
+	
+	# get barcode type
+	if (not exists($barcs_yaml->{$set}->{"type"})) {
+		die("Specify type (\"variable\" or \"constant\") for each barcode set!")
+	}
+	my $type = $barcs_yaml->{$set}->{"type"};
+	if (($type ne "variable") && ($type ne "constant")) {
+			die("Specify type (\"variable\" or \"constant\") for each barcode set!")
+	}
+	
+	# add to array of types
+	push @barcsTypes, $barcs_yaml->{$set}->{"type"};
+	
+	if (scalar (grep { /variable/ } @barcsTypes) > 1) {
+		die("Only one variable barcode allowed per yaml")
+	}
+
+	# decide 
+	
+	
+}
+
+# add extra information to yaml needed for search
 foreach my $set (keys %{ $barcs_yaml}) {
 
-	#because hash lookup is random, need to keep track of order for alter
-	push @setOrder, $set;
 
-	#get barcode length
+	# get barcode length
 	$barcs_yaml->{$set}->{"length"} = length((values %{ $barcs_yaml->{$set}->{"barcodes"} })[0]);
 	
-	#get array of barcodes to create counter later on
+	# get array of barcodes to create counter later on
 	my @barcsArray = keys %{$barcs_yaml->{$set}->{"barcodes"}};
 	push @barcsArray, qw(none ambiguous);
 	push @allBarcs, \@barcsArray;
 	
-	#construct counter to keep track of counts of barcodes
+	# construct counter to keep track of counts of barcodes
 	$barcs_yaml->{$set}->{"counts"} = {};
 	foreach my $barc (keys %{$barcs_yaml->{$set}->{"barcodes"}} ) {
 		$barcs_yaml->{$set}->{"counts"}->{$barc} = 0;
 	}
-	#add 'none' and 'ambiguous'
+	# add 'none' and 'ambiguous'
 	$barcs_yaml->{$set}->{"counts"}->{"none"} = 0;
 	$barcs_yaml->{$set}->{"counts"}->{"ambiguous"} = 0;
 	
-	#construct regexes if we are doing regex search
+	# construct regexes if we are doing regex search
 	if ($regex) {
 	
 		foreach my $barc (keys %{$barcs_yaml->{$set}->{"barcodes"}} ) {

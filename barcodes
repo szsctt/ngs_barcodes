@@ -2,11 +2,6 @@
 
 RCFILE="$HOME/.barcodesrc"
 
-if [ -e "$RCFILE" ]; then
-    echo "Loading rcfile: '$RCFILE'"
-    source "$RCFILE"
-fi
-
 SNAKEMAKE="${SNAKEMAKE:-snakemake}"
 echo "Running with: ${SNAKEMAKE}"
 
