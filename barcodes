@@ -11,3 +11,4 @@ SNAKEMAKE="${SNAKEMAKE:-snakemake}"
 echo "Running with: ${SNAKEMAKE}"
 
 "${SNAKEMAKE}" "$@"
+
