@@ -1,27 +1,5 @@
 barcodes1: 
-    start: 72 #expected start base of this barcode in the read
+    start: 0 #expected start base of this barcode in the read
     barcodes:
-        AAV2_A: GCATGT 
-        AAV2_B: GACTAG 
-        AAV2_C: GAGTCT 
-        AAV2_D: CTGATC
-        AAV2_E: CTCAGT
-        AAV2_F: CGTACT
-        AAV8_A: CGATAG 
-        AAV8_B: CACTGT 
-        AAV8_C: CAGTAC 
-        AAV8_D: CATTGG 
-        AAV8_E: TGGATC 
-        AAV8_F: CCTCCA 
-        AAVLK03_A: CGTGTA 
-        AAVLK03_B: GCACAA 
-        AAVLK03_C: ACTACT 
-        AAVLK03_D: GTTTGT 
-        AAVLK03_E: CAGGTT 
-        AAVLK03_F: TAATAT 
-        AAV13_A: TCTGGC 
-        AAV13_B: CTTCCG 
-        AAV13_C: CCCTCG 
-        AAV13_D: TATACC 
-        AAV13_E: TCAACA 
-        AAV13_F: TGCGAC 
+        sample_1: CGTAG
+        sample_2: TCCTA

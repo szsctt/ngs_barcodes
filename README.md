@@ -22,7 +22,7 @@ This will check your conda installation and download all required tools.
 ## Inputs
 
 Specify the inputs to the pipeline in a yaml file (an example `config.yml` is provided).
-This config file should consist of nested dictionaries specifying where the data is and how it is to be processed.
+This config file should consist of nested dictionaries specifying where the data is and how it is to be processed.  This file must be placed in the installation directory.
 
 ### Sample
 
@@ -30,7 +30,7 @@ The config file must have one or more keys, each of which specify one set of rea
 
 ### Reads
 
-Provide a path to the folder containing the reads from this dataset (`path`).  Please do not use spaces or special characters in this (or any other) paths.
+Provide a path to the folder containing the reads from this dataset (`path`).  Please do not use spaces or special characters in this (or any other) paths.  The path can be the absolute path, or relative to the installation directory.
 
 Also provide the suffix for each file (`R1_pattern`, `R2_pattern` eg `_R1.fastq.gz`, `_R2.fastq.gz`), the adapters used for sequencing (`adapter1` and `adapter2`), and the length of the amplicon (`amplicon_length`). If barcodes were added during amplification, note that the sequence of `fwdPrimer` must not contain those barcodes (in other words, it should be common to all the reads, regardless of which sample barcode was added).
 
