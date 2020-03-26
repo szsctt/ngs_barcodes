@@ -14,7 +14,8 @@ else
 fi
 
 BARCODES_ENV=barcodes
-${CONDA_BASE}/bin/conda env create -f env.yml
+#${CONDA_BASE}/bin/conda env create -f setup/env.yml
+${CONDA_BASE}/bin/conda create -n ${BARCODES_ENV} -c bioconda snakemake=5.12 bbmap=38.18 perl-yaml-tiny=1.73 --yes
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}
 cat > "${HOME}/.barcodesrc" <<EOF
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}

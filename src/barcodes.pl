@@ -12,7 +12,7 @@ use warnings;
 
 use Getopt::Long;
 use YAML::Tiny 'LoadFile';
-use Data::Dumper;
+#use Data::Dumper;
 
 # allocate
 my $barcodes; # barcodes (yml file)
