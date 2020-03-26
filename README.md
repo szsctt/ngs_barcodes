@@ -63,16 +63,17 @@ perl src/barcodes/pl --help
 
 ## Running the pipeline
 
-Once the config file and barcode yaml files has been correctly specified, run the pipeline from the installation directory:
+Once the config file and barcode yaml files has been correctly specified, run the pipeline from the installation directory.  The number of cores to use must be specified.
 
 ```
 cd <install_directory>
-./barcodes
+./barcodes --cores <cores>
 ```
+Each job only uses one core, so using more tha one core will only speed the pipeline up if more than one sample is being run at once.
 
 Snakemake options can also be passed in.  For example, 
 ```
-./barcodes -j 2
+./barcodes --cores 1 -j 2
 ```
 will run the pipeline with at most two jobs in parallel.  See the [snakemake docs](https://snakemake.readthedocs.io/en/stable/executable.html) for more information.
 
