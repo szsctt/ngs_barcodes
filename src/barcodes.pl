@@ -22,17 +22,19 @@ use warnings;
 use Getopt::Long;
 use YAML::Tiny 'LoadFile';
 use Data::Dumper;
+use List::MoreUtils 'first_index';
 
 # allocate
 my $barcodes; # barcodes (yml file)
 my $reads; # reads
-#my $extend_search = 0; # extend search this many bases either side of the expected position of the barcode
+my $extend_search = 0; # extend search this many bases either side of the expected position of the barcode
 my $prefix; # prefix for output file names [""]
 my $outpath = "."; # output folder for counts and read files
 my $mismatches = 0; # number of allowed mismatches in constant barcodes
 my $fwdPrimer; # forward primer to check if read is forward or reverse
 my $n_to_process;
 my $toprint = 10000; # for updates every $toPrint reads
+my $variable = 0; # becomes 1 if we have some variable barcodes
 my $help;
 
 # get inputs from command line
@@ -113,40 +115,91 @@ my $barcs_yaml;
 $barcs_yaml = LoadFile($barcodes);
 
 my @allBarcs; # need this for constructing barcode combination counter
-my @setOrder; # keep track of order of sets of barcodes because hash lookup is random
+my @sets; # construct array with list of names of barcode sets
 my @barcsTypes; # keep track of which type of barcode each set is (variable or constant)
-
 
 # for each set of barcodes, get if the barcode is constant or variable
 # because we need to track every combination of barcodes, but we don't know
 # what the variable barcodes are before we start, only allow one set of variable barcodes
 # per barcodes yaml
 
-foreach my $set (keys %{ $barcs_yaml}) {
+foreach my $set (@{$barcs_yaml}) {
 	
-	# because hash lookup is random, need to keep track of order for later
-	push @setOrder, $set;
-	
-	# get barcode type
-	if (not exists($barcs_yaml->{$set}->{"type"})) {
-		die("Specify type (\"variable\" or \"constant\") for each barcode set!")
-	}
-	my $type = $barcs_yaml->{$set}->{"type"};
-	if (($type ne "variable") && ($type ne "constant")) {
-			die("Specify type (\"variable\" or \"constant\") for each barcode set!")
-	}
-	
-	# add to array of types
-	push @barcsTypes, $barcs_yaml->{$set}->{"type"};
-	
-	if (scalar (grep { /variable/ } @barcsTypes) > 1) {
-		die("Only one variable barcode allowed per yaml")
-	}
+	# get name of this set
+	my @names = (keys %{ $set });
+	my $name = $names[0];
 
-	# decide 
+	# add to list of names
+	push @sets, $name;
 	
+	# get barcode type: variable or constant
+	if (not exists($set->{$name}->{"type"})) {
+		die("Specify type (\"variable\" or \"constant\") for each barcode set!");
+	}
+	my $type = $set->{$name}->{"type"};
+	if (($type ne "variable") && ($type ne "constant")) {
+			die("Specify type (\"variable\" or \"constant\") for each barcode set!");
+	}
 	
+	# check if this set is variable
+	if ($set->{$name}->{"type"} eq 'variable') {
+		$variable = 1;
+	}
+	
+	# add barcode type to array of types
+	push @barcsTypes, $set->{$name}->{"type"};
+	
+	# if this set is constant, get array of barcode sequences to add to @allBarcs
+	if ($type eq "constant") {
+		my @tmp = (values %{$set->{$name}->{"barcodes"}});
+		push @tmp, qw(none ambiguous);
+		push @allBarcs, \@tmp;
+	}
 }
+
+# check that there is only one set of variable barcodes
+if (scalar (grep { /variable/ } @barcsTypes) > 1) {
+		die("Only one variable barcode allowed per yaml");
+}
+
+# check that variable barcode occurs last in list of sets
+if ((first_index { $_ eq 'variable' } @barcsTypes) != ($#barcsTypes)) {
+	die("Variable barcode must occur last in list of barcodes");
+}
+
+# create data structure to store counts of combinations of barcodes
+# this is a nested hash, where the number of levels corresponds to the number of sets of barcodes
+# each path through the nested hash corresponds to a unique combination of barcodes 
+# note that if we have some variable barcodes, we can't fill in this yet
+
+#first get all possible combinations of barcodes
+my @combinations = ();
+$combinations[0] = ();
+
+cartProduct(\@allBarcs, \@combinations);
+
+die;
+
+#then create nested hash with as many levels as sets of barcodes
+#leaf values are initialised to zero
+my %counts;
+if (not $variable) {
+	foreach my $combination (@combinations) {
+		setValue(\%counts, $combination, 0);
+	}
+}
+else {
+	foreach my $combination (@combinations) {
+		setValue(\%counts, $combination, {});
+	}
+}
+
+
+
+print Dumper(\%counts);
+
+my $combinations = 2;
+die;
 
 # add extra information to yaml needed for search
 foreach my $set (keys %{ $barcs_yaml}) {
@@ -207,20 +260,7 @@ foreach my $set (keys %{ $barcs_yaml}) {
 	}	
 }
 
-#create data structure to store counts of combinations of barcodes
-#this is a nested hash, where the number of levels corresponds to the number of sets of barcodes
-#each path through the nested hash corresponds to a unique combination of barcodes 
-my $counts = {};
 
-#first get all possible combinations of barcodes
-my $combinations = cartProduct(\@allBarcs);
-
-#then create nested hash with as many levels as sets of barcodes
-#leaf values are initialised to zero
-my %counts;
-foreach my $combination (@$combinations) {
-	setValue(\%counts, $combination, 0);
-}
 	
 
 #----------------------------------------------------------------------------------------------------------------------------------------
@@ -293,7 +333,7 @@ foreach my $seq (keys %reads) {
 	$line_len = length($seq);
 	
 	#get queries from each set and do search
-	foreach my $set (@setOrder) {
+	foreach my $set (@sets) {
 	
 		if ($n_lines == 0) {
 		#check that length of line is more than $start + barcode length
@@ -355,7 +395,7 @@ foreach my $seq (keys %reads) {
 	}
 	
 	#check matches and increment counter
-	checkAllMatches(\@matches, $barcs_yaml, \%counts, \@setOrder, $reads{$seq});
+	checkAllMatches(\@matches, $barcs_yaml, \%counts, \@sets, $reads{$seq});
 	
 	$i++;
 	if ($i % $toprint == 0) { print "processed $i reads\n"; }	
@@ -373,7 +413,7 @@ foreach my $seq (keys %reads) {
 my $countfile;
 
 #print out counts to terminal and file
-foreach my $set (@setOrder) {
+foreach my $set (@sets) {
 
 	#push set barcode names to @allbarcs for combination file
 	my @barcsArray = keys %{$barcs_yaml->{$set}->{"barcodes"}};
@@ -417,7 +457,7 @@ else { $countfile = "${outpath}counts.txt"; }
 
 #open file for combined counts
 open(OUT, ">", $countfile) || die "Could not open output file: $countfile\n";
-my $header = ("name\t" x scalar(@setOrder))."count\n";
+my $header = ("name\t" x scalar(@sets))."count\n";
 print OUT $header;
 
 #then get every value from nested hash and write to file
@@ -484,54 +524,43 @@ sub addAny {
 }
 
 sub cartProduct {
-#take an array of array references, and generate the cartesian product of all the referenced arrays
-#note that this destroys the input array
+# take an array of array references, 
+#and generate the cartesian product of all the referenced arrays (in an output array references)
+# note that this destroys the input array
 
-	my $inArrayRef = pop @_;
+	my ($inArrayRef, $outArrayRef) = @_;
+	my $len = $#{$inArrayRef};
+	print "length: $len\n";
+	my $tmp = \@{$inArrayRef}[1..$len];
 	
-	#create a reference to an array with one empty array reference for output
-	my $outArrayRef = [];
-	push @$outArrayRef, [];
+	#if $inArrayRef is empty, return
+	if (scalar @{$inArrayRef} == 0) {
+		return;
+	}
 	
-	while (@{$inArrayRef}) {
-	
-		#get input array for adding
-		my $currInArrayRef = pop @{$inArrayRef};
-		
-		#for each array in @$outArrayRef, remove it and add new arrays 
-		#each consisting of that array with every element from @$currInArrayRef added
-		my $i = 0;
-		my $outArrayLen = scalar @{$outArrayRef};
-		while ($i < $outArrayLen) {
-			my $currOutArrayRef = pop @$outArrayRef;
-			
-			foreach my $new (@$currInArrayRef) {
-				my $newArrayRef = [];
-				#add new element to old out array
-				push @$newArrayRef, @$currOutArrayRef, $new;
-				
-				#add old out array to out array of arrays
-				unshift @$outArrayRef, $newArrayRef;
-				
-			}
-			$i++;
+	my @newOutArray = ();
+	foreach my $array (@{$inArrayRef}) {
+		foreach my $element ( @{${$outArrayRef}[0]} )
+		 {
+			my @tmp = push @{$array}, $element;
+			push @newOutArray, \@tmp;
 		}
 	}
 	
-	return $outArrayRef;
+	cartProduct(\@{${$inArrayRef}[1..$len]}, \@newOutArray);
 }
 
 sub checkAllMatches {
 #check the number of matches, increment and write to the appropriate counters and files
 
-	my ($matches, $barcs_yaml, $counts, $setOrder, $count) = @_;
+	my ($matches, $barcs_yaml, $counts, $sets, $count) = @_;
 	
 	#array containing unique entry to increment in combined counter
 	my @combinedMatches = ();
 	
 	#first increment individual counters in $barcs_yaml
-	foreach my $i (0..$#{$setOrder} ) {
-		my $set = $setOrder->[$i];
+	foreach my $i (0..$#{$sets} ) {
+		my $set = $sets->[$i];
 		my $matchRef = $matches->[$i];
 		incrementSetMatches($matchRef, $barcs_yaml, $set, \@combinedMatches, $count);
 	}
