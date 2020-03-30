@@ -18,8 +18,6 @@ my @product;
 cartProduct(\@comb, \@product);
 
 
-
-
 sub cartProduct {
 # take an array of array references, 
 #and generate the cartesian product of all the referenced arrays (in an output array references)
