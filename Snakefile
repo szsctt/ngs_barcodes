@@ -17,7 +17,7 @@ rule merge:
 		r1 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R1_pattern"],
 		r2 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R2_pattern"]
 	output:
-		merged = temp("out/{sample}/{sample}.merged.fastq.gz"),
+		merged = "out/{sample}/{sample}.merged.fastq.gz",
 		proc_r1 = temp("out/{sample}/{sample}.unmerged_R1.fastq.gz"),
 		proc_r2 = temp("out/{sample}/{sample}.unmerged_R2.fastq.gz")
 	params:
@@ -49,20 +49,18 @@ rule filter:
 #run script to count barcodes
 rule count:
 	input:
-		"out/{sample}/{sample}.merged.filtered.fastq.gz"
+		reads = "out/{sample}/{sample}.merged.filtered.fastq.gz",
+		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"]
 	output:
 		"out/{sample}_counts.txt"
 	params:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
-		unzipped_reads = lambda wildcards, input: str(input)[:-3],
-		prim = lambda wildcards: config[wildcards.sample]["fwdPrimer"] if "fwdPrimer" in config[wildcards.sample] else "",
-		extend = lambda wildcards: config[wildcards.sample]["extend"] if "extend" in config[wildcards.sample] else 0,
-		mismatches = lambda wildcards: config[wildcards.sample]["mismatches"] if "mismatches" in config[wildcards.sample] else 0
+		unzipped_reads = lambda wildcards, input: str(input.reads)[:-3],
+		prim = lambda wildcards: f"--fPrimer {config[wildcards.sample]['fwdPrimer']}" if "fwdPrimer" in config[wildcards.sample] else "",
 			
 	shell:
 		"""
-		gunzip -f {input}
-		perl src/barcodes.pl --barcodes {params.barcodes} --reads {params.unzipped_reads} --outpath out/{wildcards.sample}/ --mismatches {params.mismatches} --extend_search {params.extend} --prefix {wildcards.sample} --fwdPrimer {params.prim}
-		(head -n 1 out/{wildcards.sample}/{wildcards.sample}_counts.txt && tail -n +2 out/{wildcards.sample}/{wildcards.sample}_counts.txt | sort) > out/{wildcards.sample}_counts.txt
+		gunzip -f {input.reads}
+		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {params.unzipped_reads} --out {output} {params.prim}
 		"""
 		
