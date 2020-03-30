@@ -15,7 +15,11 @@
 import re
 import argparse
 import sys
+import os
 import yaml
+import pandas as pd
+from Bio.Seq import Seq
+from Bio.Alphabet import generic_dna
 
 # for reverse complmenting
 tab = str.maketrans("ACTG", "TGAC")
@@ -32,25 +36,25 @@ def main(argv):
 
 	# parse barcodes yaml
 	barcs = parse_barcs_yaml(args)
-	print("barcodes yaml:")
-	print(barcs)
-	print("")
 	
 	# construct search strategy
 	search = construct_search(barcs, args)
-	print("search strategy:")
-	print(search)
-	print("")
 	
 	# count barcodes
-	print("found barcodes:")
 	counts = count_barcodes(args, search)
+	
+	# write counts to outfile
+	if args.out is None:
+		args.out = os.path.splitext(args.fastq)[0] + ".counts.txt"
+	
+	write_counts(args.out, counts, search)
 
 def count_barcodes(args, search):
 	"""
 	count barcodes that are specified barcs within reads in fastq file specified in args.fastq
 	"""	
 	check_count = 0
+	counts = {} # to store counts of combinations of barcodes
 	#open fastq file and read every second line of four (lines with sequences)
 	with open(args.fastq) as handle:
 		for i, line in enumerate(handle):
@@ -64,25 +68,22 @@ def count_barcodes(args, search):
 					# if we can't find it, reverse-complement and check again
 						reversed = reverse_complement(line)
 						if re.search(args.fPrimer, reversed):
-							print(f'reversed line {i}')
 							line = reversed
 						# if we still can't find it, skip this line
 						else:
 							dropped_count += 1
 							continue
 				# check for barcodes
-				print('searching line:')
 				found_barcs = find_barcodes_in_line(line, search)
-				print(found_barcs)
 				check_count += 1
 			
-				
-			
-			if check_count > 20:
-				exit()
+				# increment count for this combination
+				counts = increment_counter(counts, found_barcs)
 			
 	if args.fPrimer is not None:
-		print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")			
+		print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")		
+		
+	return counts	
 	
 def construct_search(barcodes, args):
 	"""
@@ -109,13 +110,23 @@ def construct_search(barcodes, args):
 			search_dict['forward'] = f"{barcodes[i][name]['before']}(.+){barcodes[i][name]['after']}"
 			if args.fPrimer is None:
 				search_dict['reverse'] = f"{reverse_complement(barcodes[i][name]['after'])}(.+){reverse_complement(barcodes[i][name]['before'])}"
+			search_dict['name'] = name
 			search.append(search_dict)
 		# if type is constant, we need to check if we are allowing mismatches or not
 		elif barcodes[i][name]['type'] == 'constant':
 			# if number of mismatches is specified
-			search.append(create_barcodes_search_dict(barcodes[i][name], args))
+			search_dict = create_barcodes_search_dict(barcodes[i][name], args)
+			search_dict['name'] = name
+			search.append(search_dict)
 						
 	return search
+	
+def construct_counts_access(barcs, dict_name):
+	access = dict_name
+	for barc in barcs:
+		access = access + f"['{barc}']"
+		
+	return access
 
 def create_barcodes_search_dict(barcodes_dict, args):
 	"""
@@ -142,15 +153,15 @@ def create_barcodes_search_dict(barcodes_dict, args):
 	if mismatches == 0:
 		# if not allowing mismatches, just use sequences from yaml file
 		search_dict['type'] = 'constant_exact'
-		search_dict['forward_search'] = {key:value for key, value in forward_barcs.items()}
+		search_dict['forward_search'] = {f"{key} ({value})":value for key, value in forward_barcs.items()}
 		if args.fPrimer is None:
-			search_dict['reverse_search'] = {key:reverse_complement(value) for key, value in forward_barcs.items()}
+			search_dict['reverse_search'] = {f"{key} ({value})":reverse_complement(value) for key, value in forward_barcs.items()}
 	if mismatches > 0:
 		# if allowing mismatches, use regexes
 		search_dict['type'] = 'constant_regex'
-		search_dict['forward_search'] = {key:create_mismatches_regex([value], mismatches) for key, value in forward_barcs.items()}
+		search_dict['forward_search'] = {f"{key} ({value})":create_mismatches_regex([value], mismatches) for key, value in forward_barcs.items()}
 		if args.fPrimer is None:
-			search_dict['reverse_search'] = {key:create_mismatches_regex([reverse_complement(value)], mismatches) for key, value in forward_barcs.items()}
+			search_dict['reverse_search'] = {f"{key} ({value})":create_mismatches_regex([reverse_complement(value)], mismatches) for key, value in forward_barcs.items()}
 		
 	return search_dict
 	
@@ -170,6 +181,18 @@ def create_mismatches_regex(sequence_list, mismatches):
 		# then call the function with one fewer mismatches
 		return create_mismatches_regex(new_sequence_list, mismatches - 1)
 		
+def create_level(dict, path_list, value):
+	"""
+	create new level in nested dictionary, and initialise to value
+	"""
+	if len(path_list) == 0:
+		return
+
+	for k in path_list[:-1]:
+		dict = dict[k]
+	
+	dict[path_list[-1]] = value
+			
 def find_barcodes_in_line(line, search):
 	"""
 	look for the barcodes specified in 'search' in the sequence 'line'
@@ -248,13 +271,67 @@ def find_barcodes_in_line(line, search):
 			if len(matches) == 0:
 				found_barcodes.append('none')
 			elif len(matches) == 1:
-				found_barcodes.append(matches[0])
+				# try to translate if there is just one match
+				if ( len(matches[0]) % 3 ) == 0:
+					trans = Seq(matches[0], alphabet=generic_dna).translate()
+					barc = f"{trans} ({matches[0]})"
+				else:
+					barc = matches[0]
+				
+				found_barcodes.append(barc)
 			elif len(matches) > 1:
 				found_barcodes.append('ambiguous')	
+				
 		
 	return found_barcodes
-		
 	
+def get_all_counts(counts, cur=()):
+	"""
+	Get all counts for all combinations of barcodes in the 'counts' nested dict
+	https://stackoverflow.com/questions/11570499/generate-all-leaf-to-root-paths-in-a-dictionary-tree-in-python
+	"""
+	# if we're at the end of the tree
+	if isinstance(counts, int):
+		yield cur + (counts,)
+	# otherwise, get all paths beyond current place in tree
+	else:
+		for n, s in counts.items():
+			for path in get_all_counts(s, cur+(n,)):
+				yield path
+	
+def increment_counter(counts, found_barcs):
+	"""
+	given a list of barcodes found in a read, and a counter dictionary
+	increment the combination of found barcodes
+	"""
+	# first check that all levels exist in found_barcs
+	for level, barc in enumerate(found_barcs):
+		# check that barc exists at this level
+		if barc in eval(construct_counts_access(found_barcs[:level], 'counts')):
+			pass
+		else:
+			# need to add new level if we're not at the end of the list
+			if level < len(found_barcs) - 1:
+				create_level(counts, found_barcs[:level+1], {})
+			# or create new entry if we are at the end of the list
+			else:
+				create_level(counts, found_barcs[:level+1], 0)
+				
+	# now increment counter
+	increment_value(counts, found_barcs, 1)		
+	
+	
+	return counts
+	
+def increment_value(dict, path_list, value):
+	"""
+	increment value in nested dictionary
+	"""
+	for k in path_list[:-1]:
+		dict = dict[k]
+	
+	dict[path_list[-1]] += value
+		
 def parse_barcs_yaml(args):
 	"""
 	parse barcodes yaml file and check that it makes sense
@@ -311,6 +388,19 @@ def parse_barcs_yaml(args):
 	
 def reverse_complement(seq):
     return seq.translate(tab)[::-1]
+		
+def write_counts(outfile, counts, search):
+	"""
+	Write counts in recursive dictionary 'counts' as pandas data frame to file 'outfile'
+	"""
 	
+	combinations = get_all_counts(counts)
+	
+	counts_df = pd.DataFrame(combinations, columns = [set['name'] for set in search] + ['count'])
+	
+	counts_df.to_csv(outfile, index=False, sep = '\t')
+	
+	
+
 if __name__ == "__main__":
 	main(sys.argv[1:])
