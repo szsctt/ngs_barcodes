@@ -19,6 +19,7 @@ import os
 import yaml
 import pandas as pd
 from Bio.Seq import Seq
+from Bio import SeqIO
 from Bio.Alphabet import generic_dna
 
 # for reverse complmenting
@@ -29,9 +30,9 @@ def main(argv):
 	parser = argparse.ArgumentParser(description='Count barcodes in NGS reads')
 	parser.add_argument('--fastq', '-f', help='Fastq file containing reads',  required=True)
 	parser.add_argument('--barcodes', '-b', help='Barcodes yaml file specifying barcodes to find', required=True)
-	parser.add_argument('--fPrimer', '-p', help='Constant region of forward primer used for PCR (must be common to all reads)', type=str, required=False)
-	parser.add_argument('--out', '-o', help='Output file')
-	parser.add_argument('--mismatches', '-m', help='Number of mismatches to allow')
+	parser.add_argument('--fPrimer', '-p', help='Constant region of forward primer used for PCR (must be common to all reads)', type=str, required=True)
+	parser.add_argument('--out', '-o', help='Output file', default="counts.txt")
+	parser.add_argument('--translate', '-t', help='Translate variable barcodes?', action='store_true')
 	args = parser.parse_args()
 
 	# parse barcodes yaml
@@ -42,12 +43,12 @@ def main(argv):
 	
 	# count barcodes
 	counts = count_barcodes(args, search)
+
 	
 	# write counts to outfile
-	if args.out is None:
-		args.out = os.path.splitext(args.fastq)[0] + ".counts.txt"
-	
 	write_counts(args.out, counts, search)
+	
+	print(f"saved counts in file {args.out}")
 
 def count_barcodes(args, search):
 	"""
@@ -56,34 +57,29 @@ def count_barcodes(args, search):
 	check_count = 0
 	counts = {} # to store counts of combinations of barcodes
 	#open fastq file and read every second line of four (lines with sequences)
-	with open(args.fastq) as handle:
-		for i, line in enumerate(handle):
-			if i % 4 == 1:
-				if args.fPrimer is not None:
-				# if forward primer is specified, check for it in read
-					dropped_count = 0
-					if re.search(args.fPrimer, line):
-						pass
-					else:
-					# if we can't find it, reverse-complement and check again
-						reversed = reverse_complement(line)
-						if re.search(args.fPrimer, reversed):
-							line = reversed
-						# if we still can't find it, skip this line
-						else:
-							dropped_count += 1
-							continue
-				# check for barcodes
-				found_barcs = find_barcodes_in_line(line, search)
-				check_count += 1
+	
+	from Bio import SeqIO
+	with open(args.fastq, "rU") as handle:
+		for record in SeqIO.parse(handle, "fastq"):
+			# check for forward primer in read:
+			dropped_count = 0
+			# check for forward primer in read - if not found, take reverse complement
+			if record.seq.count(args.fPrimer) == 0:
+				record.seq = record.seq.reverse_complement()
+				# if we still can't find it, drop this read
+				if record.seq.count(args.fPrimer) == 0:
+					dropped_count += 1
+					continue
+			# check for barcodes
+			found_barcs = find_barcodes_in_line(str(record.seq), search)
+			check_count += 1
 			
-				# increment count for this combination
-				counts = increment_counter(counts, found_barcs)
+			# increment count for this combination
+			counts = increment_counter(counts, found_barcs)
 			
-	if args.fPrimer is not None:
-		print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")		
+	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")		
 		
-	return counts	
+	return counts
 	
 def construct_search(barcodes, args):
 	"""
@@ -107,10 +103,17 @@ def construct_search(barcodes, args):
 		# if type is variable, construct regex to match 
 		if barcodes[i][name]['type'] == 'variable':
 			search_dict = {'type':'variable'}
-			search_dict['forward'] = f"{barcodes[i][name]['before']}(.+){barcodes[i][name]['after']}"
-			if args.fPrimer is None:
-				search_dict['reverse'] = f"{reverse_complement(barcodes[i][name]['after'])}(.+){reverse_complement(barcodes[i][name]['before'])}"
 			search_dict['name'] = name
+			if args.translate:
+				search_dict['trans'] = True
+			else:
+				search_dict['trans'] = False
+			if 'mismatches' in barcodes[i][name]:
+				mismatches = barcodes[i][name]['mismatches']
+			else:
+				mismatches = 0
+			search_dict['forward'] = construct_variable_regex(barcodes[i][name]['before'], barcodes[i][name]['after'], mismatches)
+			#search_dict['forward'] = f"{barcodes[i][name]['before']}(.+){barcodes[i][name]['after']}"
 			search.append(search_dict)
 		# if type is constant, we need to check if we are allowing mismatches or not
 		elif barcodes[i][name]['type'] == 'constant':
@@ -127,6 +130,25 @@ def construct_counts_access(barcs, dict_name):
 		access = access + f"['{barc}']"
 		
 	return access
+	
+def construct_variable_regex(before, after, mismatches):
+	"""
+	Construct regex to search for variable barcodes with desired number of mismatches
+	This takes the form {before}(.*){after}
+	"""
+	if mismatches == 0:
+		return f"{before}(.*){after}"
+	
+	# get a regex for a mismatch in every place in before and after sequences
+	befores = create_mismatches_regex([before], mismatches)
+	afters = create_mismatches_regex([after], mismatches)
+	
+	# combine each before and after regex with (.+) in the middle
+	regexes = []
+	for b in befores.split("|"):
+		for a in afters.split("|"):
+			regexes.append(f"{b}(.*){a}")
+	return "|".join(regexes)
 
 def create_barcodes_search_dict(barcodes_dict, args):
 	"""
@@ -154,14 +176,10 @@ def create_barcodes_search_dict(barcodes_dict, args):
 		# if not allowing mismatches, just use sequences from yaml file
 		search_dict['type'] = 'constant_exact'
 		search_dict['forward_search'] = {f"{key} ({value})":value for key, value in forward_barcs.items()}
-		if args.fPrimer is None:
-			search_dict['reverse_search'] = {f"{key} ({value})":reverse_complement(value) for key, value in forward_barcs.items()}
 	if mismatches > 0:
 		# if allowing mismatches, use regexes
 		search_dict['type'] = 'constant_regex'
 		search_dict['forward_search'] = {f"{key} ({value})":create_mismatches_regex([value], mismatches) for key, value in forward_barcs.items()}
-		if args.fPrimer is None:
-			search_dict['reverse_search'] = {f"{key} ({value})":create_mismatches_regex([reverse_complement(value)], mismatches) for key, value in forward_barcs.items()}
 		
 	return search_dict
 	
@@ -212,21 +230,14 @@ def find_barcodes_in_line(line, search):
 			for name, barcode in set['forward_search'].items():
 				if barcode == subread_forward:
 					matches.append(name)
-			
-			# if we don't know what the forward primer is, we also need to check the reverse part of the read
-			if 'reverse_search' in set:
-				subread_reverse = reverse_complement(line[-start:-stop])
-				for name, barcode in set['reverse_search'].items():
-					if barcode == subread_reverse:
-						matches.append(name)
+					# for exact match, can only find one barcode
+					break
 			
 			# check how many matches we found
 			if len(matches) == 0:
 				found_barcodes.append('none')
 			elif len(matches) == 1:
 				found_barcodes.append(matches[0])
-			elif len(matches) > 1:
-				found_barcodes.append('ambiguous')
 			
 		elif set['type'] == 'constant_regex':
 			matches = []
@@ -240,14 +251,7 @@ def find_barcodes_in_line(line, search):
 			for name, barcode in set['forward_search'].items():
 				if re.findall(barcode, subread_forward):
 					matches.append(name)
-			
-			# if we don't know what the forward primer is, we also need to check the reverse part of the read
-			if 'reverse_search' in set:
-				subread_reverse = reverse_complement(line[-start:-stop])
-				for name, barcode in set['reverse_search'].items():
-					if re.findall(barcode, subread_reverse):
-						matches.append(name)
-						
+
 			# check how many matches we found
 			if len(matches) == 0:
 				found_barcodes.append('none')
@@ -258,30 +262,42 @@ def find_barcodes_in_line(line, search):
 			
 		elif set['type'] == 'variable':
 			matches = []
-			fwd_regex = set['forward']
+			regexes =set['forward'].split("|")
 			
-			# match regex
-			matches = re.findall(fwd_regex, line)
-			
-			# match in reverse orientiation if necesary
-			if 'reverse' in set:
-				matches = matches + re.findall(set['reverse'], reverse_complement(line))
-			
+			# match regexes
+			for regex in regexes:
+				match = re.findall(regex, line)
+				for m in match:
+					if m not in matches:
+						matches.append(m)
+						
 			# check how many matches we found
 			if len(matches) == 0:
-				found_barcodes.append('none')
+				# check if there is no insertion, or we couldn't find the regex at all
+				type = ""
+				for regex in regexes:
+					# check if we found both the 'before' and 'after' sequence
+					before, after = regex.split('(.*)')
+					if bool(re.search(before, line)) and bool(re.search(after, line)):
+						type = 'no_insertion'
+						break
+				# if we didn't find a regex above, then there wasn't a match
+				if type == "":
+					type = 'none'
+				found_barcodes.append(type)
+
 			elif len(matches) == 1:
-				# try to translate if there is just one match
-				if ( len(matches[0]) % 3 ) == 0:
-					trans = Seq(matches[0], alphabet=generic_dna).translate()
-					barc = f"{trans} ({matches[0]})"
+				#only try to translate if there is just one match and its length is a multiple of three
+				if set['trans']:
+					if ( len(matches[0]) % 3 ) == 0:
+						barc = str(Seq(matches[0], alphabet=generic_dna).translate())
+					else:
+						barc = f"({matches[0]})"
 				else:
 					barc = matches[0]
-				
 				found_barcodes.append(barc)
 			elif len(matches) > 1:
 				found_barcodes.append('ambiguous')	
-				
 		
 	return found_barcodes
 	
@@ -387,7 +403,7 @@ def parse_barcs_yaml(args):
 	return barcodes
 	
 def reverse_complement(seq):
-    return seq.translate(tab)[::-1]
+	return seq.translate(tab)[::-1]
 		
 def write_counts(outfile, counts, search):
 	"""
