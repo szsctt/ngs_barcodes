@@ -34,7 +34,7 @@ rule filter:
 	input:
 		"out/{sample}/{sample}.merged.fastq.gz"
 	output:	
-		"out/{sample}/{sample}.merged.filtered.fastq"
+		temp("out/{sample}/{sample}.merged.filtered.fastq")
 	params:
 		min_len = lambda wildcards: config[wildcards.sample]["min_length"],
 		max_len = lambda wildcards: config[wildcards.sample]["max_length"]
