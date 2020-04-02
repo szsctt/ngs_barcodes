@@ -20,7 +20,6 @@ LGB28:
     barcodes: "example_barcodes.yml"        #path to file containing capsid barcodes  
    
 LGB29:
-
    path: "data/reads/"                             
    R1_pattern: "_combined_R1.fastq"                 
    R2_pattern: "_combined_R2.fastq"                 
@@ -29,6 +28,5 @@ LGB29:
    min_length: 152                                  
    max_length: 167                                 
    fwdPrimer: "ACCACCAGCACCAGAACCTGG" 
-   translate_insertion: True                      
-             
+   translate_insertion: True                                   
    barcodes: "example_barcodes.yml"        
