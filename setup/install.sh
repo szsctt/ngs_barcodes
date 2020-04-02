@@ -13,9 +13,9 @@ else
     echo "Using Miniconda installation: $CONDA_BASE"
 fi
 
-BARCODES_ENV=barcodes
+BARCODES_ENV=barcodes2
 ${CONDA_BASE}/bin/conda env create -f setup/env.yml
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}
-cat > "${HOME}/.barcodesrc" <<EOF
+cat > "${HOME}/.barcodes2rc" <<EOF
 source "${CONDA_BASE}/bin/activate" ${BARCODES_ENV}
 EOF
