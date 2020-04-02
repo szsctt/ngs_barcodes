@@ -273,19 +273,19 @@ def find_barcodes_in_line(line, search):
 						matches.append(m)
 						
 			# check how many matches we found
-			if len(matches) == 0:
+			if (len(matches) == 0) or (matches[0] == "" and len(matches) == 1):
 				# check if there is no insertion, or we couldn't find the regex at all
-				type = ""
+				int_type = ""
 				for regex in regexes:
 					# check if we found both the 'before' and 'after' sequence
 					before, after = regex.split('(.*)')
 					if bool(re.search(before, line)) and bool(re.search(after, line)):
-						type = 'no_insertion'
+						int_type = 'no_insertion'
 						break
 				# if we didn't find a regex above, then there wasn't a match
-				if type == "":
-					type = 'none'
-				found_barcodes.append(type)
+				if int_type == "":
+					int_type = 'none'
+				found_barcodes.append(int_type)
 
 			elif len(matches) == 1:
 				#only try to translate if there is just one match and its length is a multiple of three
@@ -297,6 +297,7 @@ def find_barcodes_in_line(line, search):
 				else:
 					barc = matches[0]
 				found_barcodes.append(barc)
+				
 			elif len(matches) > 1:
 				found_barcodes.append('ambiguous')	
 		
