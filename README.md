@@ -115,7 +115,7 @@ Snakemake requires that a number of cores be specified - increasing this will al
 
 Other nakemake options can also be passed in.  For example:
 ```
-./barcodes --rerun-incomplete
+./barcodes --cores 1 --rerun-incomplete
 ```
 will re-run any incomplete jobs from previous runs.
 
