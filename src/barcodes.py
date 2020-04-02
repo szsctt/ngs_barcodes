@@ -35,6 +35,7 @@ def main(argv):
 	parser.add_argument('--translate', '-t', help='Translate variable barcodes?', action='store_true')
 	args = parser.parse_args()
 
+
 	# parse barcodes yaml
 	barcs = parse_barcs_yaml(args)
 	
@@ -59,7 +60,7 @@ def count_barcodes(args, search):
 	#open fastq file and read every second line of four (lines with sequences)
 	
 	from Bio import SeqIO
-	with open(args.fastq, "rU") as handle:
+	with open(args.fastq, "r") as handle:
 		for record in SeqIO.parse(handle, "fastq"):
 			# check for forward primer in read:
 			dropped_count = 0
