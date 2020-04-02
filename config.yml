@@ -4,7 +4,7 @@ LGB28:
     # read information
     ## provide path to folder containing reads and other necessary information below
     ## assume paired-end amplicon sequencing
-    path: "data/reads/"                              # absolute path to folder containing reads ## no spaces or special characters!
+    path: "data/reads/"                              # absolute or relative path to folder containing reads ## no spaces or special characters!
     R1_pattern: "_combined_R1.fastq"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
     R2_pattern: "_combined_R2.fastq"                 
     adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
@@ -31,5 +31,4 @@ LGB29:
    fwdPrimer: "ACCACCAGCACCAGAACCTGG" 
    translate_insertion: True                      
              
-
    barcodes: "example_barcodes.yml"        

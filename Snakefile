@@ -57,6 +57,7 @@ rule count:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
 		unzipped_reads = lambda wildcards, input: str(input.reads)[:-3],
 		prim = lambda wildcards: f"--fPrimer {config[wildcards.sample]['fwdPrimer']}" if "fwdPrimer" in config[wildcards.sample] else "",
+		translate =  lambda wildcards: "-t" if "translate_insertion" in config[wildcards.sample] and config[wildcards.sample]["translate_insertion"] == "True" else ""
 			
 	shell:
 		"""
