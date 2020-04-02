@@ -98,7 +98,7 @@ These are sequences that we want to count that are of variable sequence and leng
     after: GGAGCTTC 
 ```
 
-Again, the set must have a name at the top, which is followed by the parameters of this set.  Instead of providing the sequence of each barcode, specify 'before' and 'after' sequences that immediately precede and follow the insertion site.  Any read where the 'after' sequence immediately follows the 'before' sequence will be counted as 'no_insertion', and any read in which the before and after sequences cannot be identified will be counted as 'none'.  
+Again, the set must have a name at the top, which is followed by the parameters of this set.  Instead of providing the sequence of each barcode, specify 'before' and 'after' sequences that immediately precede and follow the insertion site.  Any read in which the before and after sequences cannot be identified will be counted as 'none'. Any read in which the after sequence follows the before sequence (with nothing in between) will be counted as 'no\_insertion'.   
 
 Again, the number of allowed mismatches can be specified, but allowing mismatches is not recommended.
 
