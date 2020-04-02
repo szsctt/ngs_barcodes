@@ -2,7 +2,6 @@
 #### load config file ####
 # load config file specifiying samples and parameters
 configfile: "config.yml"
-
 				
 #### target files ####
 rule all:
@@ -35,7 +34,7 @@ rule filter:
 	input:
 		"out/{sample}/{sample}.merged.fastq.gz"
 	output:	
-		temp("out/{sample}/{sample}.merged.filtered.fastq.gz")
+		temp("out/{sample}/{sample}.merged.filtered.fastq")
 	params:
 		min_len = lambda wildcards: config[wildcards.sample]["min_length"],
 		max_len = lambda wildcards: config[wildcards.sample]["max_length"]
@@ -43,25 +42,32 @@ rule filter:
 		"""
 		bbduk.sh in={input} out={output} minlen={params.min_len} maxlen={params.max_len}
 		"""
-		
+
 #### counting ####
+
+def translate_flag(wildcards):
+	if "translate_insertion" in config[wildcards.sample]:
+		if config[wildcards.sample]["translate_insertion"] is True:
+			return "-t"
+		else:
+			return ""
+	else:
+		return ""
 
 #run script to count barcodes
 rule count:
 	input:
-		reads = "out/{sample}/{sample}.merged.filtered.fastq.gz",
+		reads = "out/{sample}/{sample}.merged.filtered.fastq",
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"]
 	output:
 		"out/{sample}_counts.txt"
 	params:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
-		unzipped_reads = lambda wildcards, input: str(input.reads)[:-3],
 		prim = lambda wildcards: f"--fPrimer {config[wildcards.sample]['fwdPrimer']}" if "fwdPrimer" in config[wildcards.sample] else "",
-		translate =  lambda wildcards: "-t" if "translate_insertion" in config[wildcards.sample] and config[wildcards.sample]["translate_insertion"] == "True" else ""
+		translate =  translate_flag
 			
 	shell:
 		"""
-		gunzip -f {input.reads}
-		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {params.unzipped_reads} --out {output} {params.prim}
+		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {input.reads} --out {output} {params.prim} {params.translate}
 		"""
 		
