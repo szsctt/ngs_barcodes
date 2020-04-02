@@ -4,29 +4,32 @@ LGB28:
     # read information
     ## provide path to folder containing reads and other necessary information below
     ## assume paired-end amplicon sequencing
-    path: "data/reads/"                              #absolute path to folder containing reads ## no spaces or special characters!
-    R1_pattern: "_combined_R1.fastq"                          #read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq"                          #where sample is specified as the key to this sub-dictionary
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    #adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    #required for better merging   
-    min_length: 152                                 #minimum length of amplicon, including sample barcodes (if present)
-    max_length: 155                                  #maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "ACCACCAGCACCAGAACCTGG"               #optionally specify forward primer common to all reads (ie excluding any barcodes)
+    path: "data/reads/"                              # absolute path to folder containing reads ## no spaces or special characters!
+    R1_pattern: "_combined_R1.fastq"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
+    R2_pattern: "_combined_R2.fastq"                 
+    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
+    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
+    min_length: 152                                  # minimum length of amplicon, including sample barcodes (if present)
+    max_length: 155                                  # maximum length of amplicon, including sample barcodes (if present)
+    fwdPrimer: "ACCACCAGCACCAGAACCTGG"               # specify forward primer common to all reads (ie excluding any barcodes)
+    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
 
     # barcode information
     ## barcodes are specified in seperate yaml (see example_barcodes.yml)
     ## provide path to this yaml
     barcodes: "example_barcodes.yml"        #path to file containing capsid barcodes  
-    
+   
 LGB29:
 
-    path: "data/reads/"                             
-    R1_pattern: "_combined_R1.fastq"                 
-    R2_pattern: "_combined_R2.fastq"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    
-    min_length: 152                                  
-    max_length: 167                                 
-    fwdPrimer: "ACCACCAGCACCAGAACCTGG"              
+   path: "data/reads/"                             
+   R1_pattern: "_combined_R1.fastq"                 
+   R2_pattern: "_combined_R2.fastq"                 
+   adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    
+   adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    
+   min_length: 152                                  
+   max_length: 167                                 
+   fwdPrimer: "ACCACCAGCACCAGAACCTGG" 
+   translate_insertion: True                      
+             
 
-    barcodes: "example_barcodes.yml"        
+   barcodes: "example_barcodes.yml"        
