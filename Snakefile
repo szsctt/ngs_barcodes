@@ -1,7 +1,7 @@
 
 #### load config file ####
 # load config file specifiying samples and parameters
-configfile: "config.yml" 
+# configfile: "config.yml" # supply on command line
 				
 #### target files ####
 rule all:
