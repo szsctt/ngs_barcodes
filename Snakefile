@@ -1,8 +1,14 @@
+from os import path
 
 #### load config file ####
 # load config file specifiying samples and parameters
 # configfile: "config.yml" # supply on command line
-				
+	
+	
+#### wildcard constraints
+wildcard_constraints:
+	sample = "|".join(list(config.keys()))			
+	
 #### target files ####
 rule all:
 	input: 
@@ -13,8 +19,8 @@ rule all:
 #merge R1 and R2
 rule merge:
 	input:
-		r1 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R1_pattern"],
-		r2 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R2_pattern"]
+		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
+		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
 	output:
 		merged = temp("out/{sample}/{sample}.merged.fastq.gz"),
 		proc_r1 = temp("out/{sample}/{sample}.unmerged_R1.fastq.gz"),
