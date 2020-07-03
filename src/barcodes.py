@@ -347,6 +347,10 @@ def increment_counter(counts, found_barcs):
 	given a list of barcodes found in a read, and a counter dictionary
 	increment the combination of found barcodes
 	"""
+	
+	assert isinstance(counts, dict)
+	assert isinstance(found_barcs, list)
+	
 	# first check that all levels exist in found_barcs
 	for level, barc in enumerate(found_barcs):
 		# check that barc exists at this level
