@@ -12,6 +12,10 @@
 # output file with counts for each barcode by set and combination of barcodes
 # allow for mismatches and variability in barcode location
 
+
+import gzip
+from mimetypes import guess_type
+from functools import partial
 import re
 import argparse
 import sys
@@ -21,9 +25,11 @@ import pandas as pd
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.Alphabet import generic_dna
+import pdb
 
 # for reverse complmenting
 tab = str.maketrans("ACTG", "TGAC")
+pdb.set_trace()
 
 def main(argv):
 	#get arguments
