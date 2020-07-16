@@ -7,3 +7,4 @@ data
 docker/Snakefile
 docker/barcodes.py
 docker/env.yml
+default.profraw
