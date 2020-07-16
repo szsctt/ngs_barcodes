@@ -1,20 +1,69 @@
+from os import path
 
 #### load config file ####
 # load config file specifiying samples and parameters
 # configfile: "config.yml" # supply on command line
-				
+	
+	
+#### wildcard constraints
+wildcard_constraints:
+	sample = "|".join(list(config.keys()))			
+	
 #### target files ####
 rule all:
 	input: 
-		expand("out/{sample}_counts.txt", sample = config.keys())
+		expand("out/{sample}_counts.txt", sample = config.keys()),
+		"out/qc_input/multiqc_report.html",
+		"out/qc_filt/multiqc_report.html"
+		
+rule fastqc_input:
+	input:
+		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
+		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
+	output:
+		r1_zip =  temp("out/qc_input/{sample}_1_fastqc.zip"),
+		r2_zip =  temp("out/qc_input/{sample}_2_fastqc.zip")
+	params:
+		# use temporary directories becuase running multiple samples in the same directory can set up race condition
+		zip_path1=lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{config[wildcards.sample]['R1_pattern'].split('.')[0]}_fastqc.zip",
+		tempdir1 = lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1",
+		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{config[wildcards.sample]['R2_pattern'].split('.')[0]}_fastqc.zip",
+		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
+
+	shell: 
+		"""
+		mkdir -p {params.tempdir1}
+		mkdir -p {params.tempdir2}
+		fastqc -o {params.tempdir1} {input.r1} 
+		fastqc -o {params.tempdir2} {input.r2}
+		mv {params.zip_path1} {output.r1_zip}
+		mv {params.zip_path2} {output.r2_zip}
+		rm -r {params.tempdir1} {params.tempdir2}
+		"""
+		
+def multiqc_input(wildcards):
+	files  = [f"out/qc_input/{samp}_1_fastqc.zip" for samp in config.keys()]
+	files2 = [f"out/qc_input/{samp}_2_fastqc.zip" for samp in config.keys()]
+	return files + files2
+		
+rule multiqc:
+	input:
+		multiqc_input
+	output:
+		"out/qc_input/multiqc_report.html"
+	params:
+		outdir = lambda wildcards, output: path.dirname(output[0])
+
+	shell:
+		"multiqc {input} -f --outdir {params.outdir}"
 		
 #### merging ####
 
 #merge R1 and R2
 rule merge:
 	input:
-		r1 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R1_pattern"],
-		r2 = lambda wildcards: config[wildcards.sample]["path"] + wildcards.sample + config[wildcards.sample]["R2_pattern"]
+		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
+		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
 	output:
 		merged = temp("out/{sample}/{sample}.merged.fastq.gz"),
 		proc_r1 = temp("out/{sample}/{sample}.unmerged_R1.fastq.gz"),
@@ -42,6 +91,35 @@ rule filter:
 		"""
 		bbduk.sh in={input} out={output} minlen={params.min_len} maxlen={params.max_len}
 		"""
+
+rule fastqc_filtered:
+	input:
+		reads = "out/{sample}/{sample}.merged.filtered.fastq"
+	output:
+		reads_zip =  temp("out/qc_filt/{sample}.merged.filtered_fastqc.zip")
+	params:
+		# use temporary directories becuase running multiple samples in the same directory can set up race condition
+		zip_path1=lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}/{wildcards.sample}.merged.filtered_fastqc.zip",
+		tempdir1 = lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}",
+
+	shell: 
+		"""
+		mkdir -p {params.tempdir1}
+		fastqc -o {params.tempdir1} {input.reads} 
+		mv {params.zip_path1} {output.reads_zip}
+		rm -r {params.tempdir1}
+		"""
+		
+rule multiqc_filtered:
+	input:
+			[f"out/qc_filt/{samp}.merged.filtered_fastqc.zip" for samp in config.keys()]
+	output:
+		"out/qc_filt/multiqc_report.html"
+	params:
+		outdir = lambda wildcards, output: path.dirname(output[0])
+
+	shell:
+		"multiqc {input} -f --outdir {params.outdir}"
 
 #### counting ####
 

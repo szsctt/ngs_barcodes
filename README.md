@@ -43,7 +43,7 @@ sample1: # sample name
 
 ### Reads
 
-Provide a path to the folder containing the reads from this dataset (`path`).  Please do not use spaces or special characters in this (or any other) paths.
+Provide a path to the folder containing the reads from this dataset (`path`).  Please do not use spaces or special characters in this (or any other) paths.  The path can be the absolute path, or relative to the installation directory.
 
 Also provide the suffix for each file (`R1_pattern`, `R2_pattern` eg `_R1.fastq.gz`, `_R2.fastq.gz`), the adapters used for sequencing (`adapter1` and `adapter2`), and the length of the amplicon (`amplicon_length`). If barcodes were added during amplification, note that the sequence of `fwdPrimer` must not contain those barcodes (in other words, it should be common to all the reads, regardless of which sample barcode was added).
 
@@ -104,12 +104,13 @@ Again, the number of allowed mismatches can be specified, but allowing mismatche
 
 ## Running the pipeline
 
-Once the config file and barcode yaml files has been correctly specified, run the pipeline from the installation directory:
+Once the config file and barcode yaml files has been correctly specified, run the pipeline from the installation directory.  The number of cores to use must be specified.
 
 ```
 cd <install_directory>
-./barcodes --cores 1
+./barcodes --cores <cores>
 ```
+Each job only uses one core, so using more tha one core will only speed the pipeline up if more than one sample is being run at once.
 
 Snakemake requires that a number of cores be specified - increasing this will allow jobs to be run in parallel, but this will only speed up execution if more than one sample is being processed simultaneously.
 
