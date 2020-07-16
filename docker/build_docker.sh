@@ -1,7 +1,12 @@
 #!/bin/bash
 
 cp ../setup/env.yml .
-cp ../Snakefile .
 cp ../src/barcodes.py .
 
-sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:1
+
+cp ../Snakefile .
+# be a bit more restrictive about where data and results are, to make sure
+# that they're always in the directory in which the singularity sif file is
+perl -pie 's/config\[wildcards.sample\]\[\"path\"\]/\"data\/\"/g' Snakefile
+
+sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:2
