@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-RCFILE="$HOME/.barcodesrc"
+RCFILE="$HOME/.barcodes2rc"
 
 if [ -e "$RCFILE" ]; then
     #echo "Loading rcfile: '$RCFILE'"

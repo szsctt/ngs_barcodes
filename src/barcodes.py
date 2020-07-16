@@ -21,6 +21,10 @@ import pandas as pd
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio.Alphabet import generic_dna
+import gzip
+from mimetypes import guess_type
+from functools import partial
+import pdb
 
 # for reverse complmenting
 tab = str.maketrans("ACTG", "TGAC")
@@ -44,7 +48,6 @@ def main(argv):
 	
 	# count barcodes
 	counts = count_barcodes(args, search)
-
 	
 	# write counts to outfile
 	write_counts(args.out, counts, search)
@@ -57,20 +60,36 @@ def count_barcodes(args, search):
 	"""	
 	check_count = 0
 	counts = {} # to store counts of combinations of barcodes
-	#open fastq file and read every second line of four (lines with sequences)
 	
-	from Bio import SeqIO
-	with open(args.fastq, "r") as handle:
+	ambiguous_fPrimer = 0
+	
+	# open fastq file and read every second line of four (lines with sequences)
+	# handle gzipped files as well as non-gzipped
+	# https://stackoverflow.com/questions/42757283/seqio-parse-on-a-fasta-gz
+	encoding = guess_type(args.fastq)[1]  # uses file extension
+	_open = partial(gzip.open, mode='rt') if encoding == 'gzip' else open
+	
+
+	with _open(args.fastq) as handle:
 		for record in SeqIO.parse(handle, "fastq"):
 			# check for forward primer in read:
 			dropped_count = 0
+			
 			# check for forward primer in read - if not found, take reverse complement
-			if record.seq.count(args.fPrimer) == 0:
+			n_matches = record.seq.lower().count(args.fPrimer.lower())
+			if n_matches == 0:
+				# check reverse complement
 				record.seq = record.seq.reverse_complement()
+				n_matches = record.seq.lower().count(args.fPrimer.lower())
 				# if we still can't find it, drop this read
-				if record.seq.count(args.fPrimer) == 0:
+				if n_matches == 0:
 					dropped_count += 1
 					continue
+					
+			# check for multiple matches - 
+			if n_matches > 1:
+					ambiguous_fPrimer += 1
+					
 			# check for barcodes
 			found_barcs = find_barcodes_in_line(str(record.seq), search)
 			check_count += 1
@@ -78,7 +97,8 @@ def count_barcodes(args, search):
 			# increment count for this combination
 			counts = increment_counter(counts, found_barcs)
 			
-	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")		
+	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")	
+	print(f"forward primer appeared more than once in {ambiguous_fPrimer} reads: if this number is high, consider re-running with a longer forward primer sequence")	
 		
 	return counts
 	
@@ -217,6 +237,7 @@ def find_barcodes_in_line(line, search):
 	look for the barcodes specified in 'search' in the sequence 'line'
 	return a list of the names of the barcodes found
 	"""
+	pdb.set_trace()
 	# iterate over sets to search for
 	found_barcodes = []
 	for set in search:
@@ -229,12 +250,15 @@ def find_barcodes_in_line(line, search):
 			
 			# check if the subread matches any of the barcodes
 			for name, barcode in set['forward_search'].items():
+				assert len(barcode) == len(subread_forward)
+				
 				if barcode == subread_forward:
 					matches.append(name)
 					# for exact match, can only find one barcode
 					break
 			
 			# check how many matches we found
+			assert (len(matches) == 0 | len(matches) == 1)
 			if len(matches) == 0:
 				found_barcodes.append('none')
 			elif len(matches) == 1:
@@ -300,7 +324,8 @@ def find_barcodes_in_line(line, search):
 				
 			elif len(matches) > 1:
 				found_barcodes.append('ambiguous')	
-		
+
+	assert len(found_barcodes) == len(search)
 	return found_barcodes
 	
 def get_all_counts(counts, cur=()):
@@ -322,6 +347,10 @@ def increment_counter(counts, found_barcs):
 	given a list of barcodes found in a read, and a counter dictionary
 	increment the combination of found barcodes
 	"""
+	
+	assert isinstance(counts, dict)
+	assert isinstance(found_barcs, list)
+	
 	# first check that all levels exist in found_barcs
 	for level, barc in enumerate(found_barcs):
 		# check that barc exists at this level
