@@ -7,6 +7,8 @@ cp ../src/barcodes.py .
 cp ../Snakefile .
 # be a bit more restrictive about where data and results are, to make sure
 # that they're always in the directory in which the singularity sif file is
-perl -pie 's/config\[wildcards.sample\]\[\"path\"\]/\"data\/\"/g' Snakefile
+perl -pe "s/config\[wildcards.sample\]\[\'path\'\]/\"data\/\"/ig" Snakefile > Snakefile.bak
+mv Snakefile.bak Snakefile
 
-sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:2
+
+sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:3
