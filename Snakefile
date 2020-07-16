@@ -48,7 +48,7 @@ rule filter:
 def translate_flag(wildcards):
 	if "translate_insertion" in config[wildcards.sample]:
 		if config[wildcards.sample]["translate_insertion"] is True:
-			return "-t"
+			return "--translate"
 		else:
 			return ""
 	else:
