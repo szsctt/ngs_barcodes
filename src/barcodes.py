@@ -32,7 +32,6 @@ import pdb
 
 # for reverse complmenting
 tab = str.maketrans("ACTG", "TGAC")
-pdb.set_trace()
 
 def main(argv):
 	#get arguments
@@ -242,7 +241,6 @@ def find_barcodes_in_line(line, search):
 	look for the barcodes specified in 'search' in the sequence 'line'
 	return a list of the names of the barcodes found
 	"""
-	pdb.set_trace()
 	# iterate over sets to search for
 	found_barcodes = []
 	for set in search:
