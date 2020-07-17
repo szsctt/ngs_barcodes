@@ -2,6 +2,7 @@
 
 cp ../setup/env.yml .
 cp ../src/barcodes.py .
+cp ../src/sim.py .
 
 
 cp ../Snakefile .

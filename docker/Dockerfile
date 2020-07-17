@@ -1,9 +1,9 @@
 FROM continuumio/miniconda:4.7.12
 
-#  $ docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:3
+#  $ docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:4
 #  $ docker run --rm -it szsctt/barcodes:latest /bin/bash
 #  $ docker push szsctt/barcodes:latest
-#  $ docker push szsctt/barcodes:3
+#  $ docker push szsctt/barcodes:4
 
 ADD env.yml /tmp/env.yml
 RUN /opt/conda/bin/conda env update -n base -f /tmp/env.yml &&\
@@ -11,3 +11,4 @@ RUN /opt/conda/bin/conda env update -n base -f /tmp/env.yml &&\
 	
 ADD Snakefile .
 ADD barcodes.py src/barcodes.py
+ADD sim.py src/barcodes.py
