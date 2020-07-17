@@ -19,7 +19,7 @@ from functools import partial
 import re
 import argparse
 import sys
-import os
+from os import path
 import yaml
 import pandas as pd
 from Bio.Seq import Seq
@@ -41,8 +41,13 @@ def main(argv):
 	parser.add_argument('--fPrimer', '-p', help='Constant region of forward primer used for PCR (must be common to all reads)', type=str, required=True)
 	parser.add_argument('--out', '-o', help='Output file', default="counts.txt")
 	parser.add_argument('--translate', '-t', help='Translate variable barcodes?', action='store_true')
+	parser.add_argument('--debug', help='Produce extra output useful for debugging', action='store_true')
+	parser.add_argument('--debug-output', help="output directory for debugging output", default = "out/")
 	args = parser.parse_args()
 
+	# check arguments
+	if args.debug is True:
+		path.isdir(args.debug_output)
 
 	# parse barcodes yaml
 	barcs = parse_barcs_yaml(args)
@@ -50,20 +55,35 @@ def main(argv):
 	# construct search strategy
 	search = construct_search(barcs, args)
 	
-	# count barcodes
-	counts = count_barcodes(args, search)
+	# count barcodes and write output
+	if args.debug is False:
 	
-	# write counts to outfile
-	write_counts(args.out, counts, search)
+		counts = count_barcodes(args, search, False)
+		write_counts(args.out, counts, search)
+	else:
+		counts, counts_rev = count_barcodes(args, search, True)
+		
+		# write forward counts
+		fwd_filename = path.splitext(args.out)[0] + ".forward.txt"
+		write_counts(fwd_filename, counts, search)
+		
+		# write reverse counts
+		rev_filename = path.splitext(args.out)[0] + ".reverse.txt"
+		write_counts(rev_filename, counts_rev, search)
+
 	
 	print(f"saved counts in file {args.out}")
 
-def count_barcodes(args, search):
+def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 	"""
 	count barcodes that are specified barcs within reads in fastq file specified in args.fastq
 	"""	
+	
+	
 	check_count = 0
 	counts = {} # to store counts of combinations of barcodes
+	if debug is True:
+		counts_rev = {}
 	
 	ambiguous_fPrimer = 0
 	
@@ -78,6 +98,7 @@ def count_barcodes(args, search):
 		for record in SeqIO.parse(handle, "fastq"):
 			# check for forward primer in read:
 			dropped_count = 0
+			reversed = False
 			
 			# check for forward primer in read - if not found, take reverse complement
 			n_matches = record.seq.lower().count(args.fPrimer.lower())
@@ -85,12 +106,13 @@ def count_barcodes(args, search):
 				# check reverse complement
 				record.seq = record.seq.reverse_complement()
 				n_matches = record.seq.lower().count(args.fPrimer.lower())
+				reversed = True
 				# if we still can't find it, drop this read
 				if n_matches == 0:
 					dropped_count += 1
 					continue
 					
-			# check for multiple matches - 
+			# check for multiple matches
 			if n_matches > 1:
 					ambiguous_fPrimer += 1
 					
@@ -99,12 +121,21 @@ def count_barcodes(args, search):
 			check_count += 1
 			
 			# increment count for this combination
-			counts = increment_counter(counts, found_barcs)
+			if debug is True:
+				if reversed is True:
+					counts_rev = increment_counter(counts_rev, found_barcs)
+				else:
+					counts = increment_counter(counts, found_barcs)
+			else:
+				counts = increment_counter(counts, found_barcs)
 			
 	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")	
 	print(f"forward primer appeared more than once in {ambiguous_fPrimer} reads: if this number is high, consider re-running with a longer forward primer sequence")	
-		
-	return counts
+	
+	if debug is False:
+		return counts
+	else:
+		return counts, counts_rev
 	
 def construct_search(barcodes, args):
 	"""
@@ -261,7 +292,9 @@ def find_barcodes_in_line(line, search):
 					break
 			
 			# check how many matches we found
-			assert (len(matches) == 0 | len(matches) == 1)
+			if not(len(matches) == 0 or len(matches) == 1):
+				pdb.set_trace()
+			assert (len(matches) == 0 or len(matches) == 1)
 			if len(matches) == 0:
 				found_barcodes.append('none')
 			elif len(matches) == 1:
