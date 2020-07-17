@@ -3,7 +3,7 @@ LB03-VEC:
     # read information
     ## provide path to folder containing reads and other necessary information below
     ## assume paired-end amplicon sequencing
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
+    path: "data/reads/"                              # absolute or relative path to folder 
     R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
     R2_pattern: "_combined_R2.fastq.gz"                 
     adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
@@ -17,83 +17,4 @@ LB03-VEC:
     ## barcodes are specified in seperate yaml (see example_barcodes.yml)
     ## provide path to this yaml
 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
-
-    
-LGB03-PL:
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq.gz"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes (if present)
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any barcodes)
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
-
-    barcodes: "../config/434Li_constant.barcodes.yml"       #path to file containing capsid barcodes  
-
-
-Li3-R2-170:
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq.gz"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes (if present)
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any barcodes)
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
-
-
-Li3-R3-HEP:
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq.gz"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes (if present)
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any barcodes)
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
-
-    
-Li3-R3-NOHEP:
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq.gz"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes (if present)
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any barcodes)
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
-
-NHP384:
-    path: "../data/reads/Suzanne_434bp"                              # absolute or relative path to folder 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and <sample><R2_pattern>
-    R2_pattern: "_combined_R2.fastq.gz"                 
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes (if present)
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes (if present)
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any barcodes)
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' otherwise. If there are no insertion 'barcodes', this parameter doesn't matter 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
-
-300LGB1:
-    path: "../data/reads/N2003139_MC_30-371804637/MS200611-714"                              # absolute or relative path to 
-    R1_pattern: "_combined_R1.fastq.gz"                 # read files should be named <sample><R1_pattern> and 
-    R2_pattern: "_combined_R2.fastq.gz"
-    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
-    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging
-    min_length: 434                                  # minimum length of amplicon, including sample barcodes 
-    max_length: 434                                  # maximum length of amplicon, including sample barcodes 
-    fwdPrimer: "TAGGAACTGGCTTCCT"               # specify forward primer common to all reads (ie excluding any 
-    translate_insertion: True                        # 'True' if you want the translated insertions, 'False' 
-    barcodes: "../config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes
-
-
+    barcodes: "config/434Li_constant.barcodes.yml"        #path to file containing capsid barcodes  
