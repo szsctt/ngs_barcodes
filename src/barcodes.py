@@ -31,7 +31,9 @@ from functools import partial
 import pdb
 
 # for reverse complmenting
-tab = str.maketrans("ACTG", "TGAC")
+old_chars = "ACTGactg"
+new_chars = "TGACtgac"
+tab = str.maketrans("ACTGactg", "TGACtgac")
 
 def main(argv):
 	#get arguments
@@ -80,24 +82,25 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 	"""	
 	
 	
-	check_count = 0
+	checked_count = 0
+	dropped_count = 0
+	rev_count = 0
+	ambiguous_fPrimer = 0
 	counts = {} # to store counts of combinations of barcodes
+	
 	if debug is True:
 		counts_rev = {}
-	
-	ambiguous_fPrimer = 0
 	
 	# open fastq file and read every second line of four (lines with sequences)
 	# handle gzipped files as well as non-gzipped
 	# https://stackoverflow.com/questions/42757283/seqio-parse-on-a-fasta-gz
 	encoding = guess_type(args.fastq)[1]  # uses file extension
 	_open = partial(gzip.open, mode='rt') if encoding == 'gzip' else open
-	
 
 	with _open(args.fastq) as handle:
 		for record in SeqIO.parse(handle, "fastq"):
 			# check for forward primer in read:
-			dropped_count = 0
+
 			reversed = False
 			
 			# check for forward primer in read - if not found, take reverse complement
@@ -115,10 +118,15 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 			# check for multiple matches
 			if n_matches > 1:
 					ambiguous_fPrimer += 1
+					dropped_count += 1
+					continue
+					
+			if reversed is True:
+				rev_count += 1
 					
 			# check for barcodes
 			found_barcs = find_barcodes_in_line(str(record.seq), search)
-			check_count += 1
+			checked_count += 1
 			
 			# increment count for this combination
 			if debug is True:
@@ -128,7 +136,8 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 					counts = increment_counter(counts, found_barcs)
 			else:
 				counts = increment_counter(counts, found_barcs)
-			
+	
+	print(f"checked {checked_count} reads in total; {rev_count} of these were correctly reversed")
 	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")	
 	print(f"forward primer appeared more than once in {ambiguous_fPrimer} reads: if this number is high, consider re-running with a longer forward primer sequence")	
 	
@@ -470,6 +479,9 @@ def parse_barcs_yaml(args):
 	return barcodes
 	
 def reverse_complement(seq):
+	# check for bases not recgonised
+	for base in seq:
+		assert base in old_chars
 	return seq.translate(tab)[::-1]
 		
 def write_counts(outfile, counts, search):
