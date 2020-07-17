@@ -1,0 +1,80 @@
+- pos482: 
+    type: constant
+    mismatches: 0 #number of mismatches to allow in barcode.  mismatches > 0 will be much slower than mismatches == 0
+    start: 24 #expected start base of this barcode in the read
+    barcodes:
+        Cys_482: TGT
+        Ser_482A: AGT
+        Ser_482B: TCT
+
+- pos487:
+    type: constant
+    mismatches: 0
+    start: 39
+    barcodes:
+        Arg_487A: AGA
+        Arg_487B: CGT
+        Arg_487C: CGC
+        Arg_487D: CGA
+        Arg_487E: CGG
+        Arg_487F: AGG
+        Gln_487A: CAA
+        Gln_487B: CAG
+
+- pos496: 
+    type: constant
+    mismatches: 0 
+    start: 66 
+    barcodes:
+        Asn_496: AAC
+        Asp_496: GAC
+
+- pos503: 
+    type: constant
+    mismatches: 0 
+    start: 87 
+    barcodes:
+        Thr_503: ACT
+        Ala_503: GCT
+
+- pos532: 
+    type: constant
+    mismatches: 0 
+    start: 174 
+    barcodes:
+        Lys_532: AAG
+        Glu_532: GAG
+        Gln_532: CAG
+
+- pos582:
+    type: constant
+    mismatches: 0 
+    start: 324 
+    barcodes:
+        Asn_582: AAC
+        Ser_582: AGC
+
+- pos585: 
+    type: constant
+    mismatches: 0 
+    start: 333 
+    barcodes:
+        Arg_585: AGA
+        Ser_585: AGC
+
+- pos588: 
+    type: constant
+    mismatches: 0 
+    start: 342 
+    barcodes:
+        Arg_588: AGA
+        Thr_588: ACA
+
+- pos596:
+    type: constant
+    mismatches: 0 
+    start: 366
+    barcodes:
+        Asn_596: AAC
+        Asp_596: GAC
+
