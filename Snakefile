@@ -1,5 +1,19 @@
 from os import path
 
+# get suffixes for each sample
+suffix_R1 = {}
+suffix_R2 = {}
+for sample in config:
+	prefix, suffix1 = path.splitext(config[sample]['R1_pattern'])
+	if suffix1 == ".gz":
+		suffix_R1[sample] = path.splitext(prefix)[0]
+		suffix_R2[sample] = path.splitext(path.splitext(config[sample]['R2_pattern'])[0])[0]
+	elif suffix1 in ['.fastq', '.fq']:
+		suffix_R1[sample] = prefix
+		suffix_R2[sample] = path.splitext(config[sample]['R2_pattern'])[0]
+	else:
+		raise ValueError("Unsupported file type: file extension must be 'fq' or 'fastq', and only gzip compression is supported")
+
 #### load config file ####
 # load config file specifiying samples and parameters
 # configfile: "config.yml" # supply on command line
@@ -7,7 +21,10 @@ from os import path
 	
 #### wildcard constraints
 wildcard_constraints:
-	sample = "|".join(list(config.keys()))			
+	sample = "|".join(list(config.keys())),
+	suffix1 = "|".join(suffix_R1.values()),
+	suffix2 = "|".join(suffix_R2.values())
+	
 	
 #### target files ####
 rule all:
@@ -16,34 +33,45 @@ rule all:
 		"out/qc_input/multiqc_report.html",
 		"out/qc_filt/multiqc_report.html"
 		
-rule fastqc_input:
+rule fastqc_input_r1:
 	input:
 		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
-		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
 	output:
-		r1_zip =  temp("out/qc_input/{sample}_1_fastqc.zip"),
-		r2_zip =  temp("out/qc_input/{sample}_2_fastqc.zip")
+		r1_zip =  temp("out/qc_input/{sample}{suffix1}.zip"),
 	params:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
-		zip_path1=lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{config[wildcards.sample]['R1_pattern'].split('.')[0]}_fastqc.zip",
+		zip_path1=lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{wildcards.suffix1}_fastqc.zip",
 		tempdir1 = lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1",
-		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{config[wildcards.sample]['R2_pattern'].split('.')[0]}_fastqc.zip",
-		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
-
+	
 	shell: 
 		"""
 		mkdir -p {params.tempdir1}
-		mkdir -p {params.tempdir2}
 		fastqc -o {params.tempdir1} {input.r1} 
-		fastqc -o {params.tempdir2} {input.r2}
 		mv {params.zip_path1} {output.r1_zip}
+		rm -r {params.tempdir1} 
+		"""
+		
+rule fastqc_input_r2:
+	input:
+		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
+	output:
+		r2_zip =  temp("out/qc_input/{sample}{suffix2}.zip")
+	params:
+		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{wildcards.suffix2}_fastqc.zip",
+		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
+	
+	shell: 
+		"""
+		mkdir -p {params.tempdir2}
+		fastqc -o {params.tempdir2} {input.r2}
 		mv {params.zip_path2} {output.r2_zip}
-		rm -r {params.tempdir1} {params.tempdir2}
+		rm -r {params.tempdir2}
 		"""
 		
 def multiqc_input(wildcards):
-	files  = [f"out/qc_input/{samp}_1_fastqc.zip" for samp in config.keys()]
-	files2 = [f"out/qc_input/{samp}_2_fastqc.zip" for samp in config.keys()]
+	
+	files  = [f"out/qc_input/{samp}{suffix_R1[samp]}.zip" for samp in config.keys()]
+	files2 = [f"out/qc_input/{samp}{suffix_R2[samp]}.zip" for samp in config.keys()]
 	return files + files2
 		
 rule multiqc:
