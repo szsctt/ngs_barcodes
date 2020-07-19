@@ -29,9 +29,9 @@ def main(argv):
 	parser.add_argument('--barcodes', '-b', help='Barcodes yaml file specifying reads and barcodes to use', required=True)
 	parser.add_argument('--out-fastq_1', '-f1', help='Output R1 fastq file', default="sim.R1.fastq")
 	parser.add_argument('--out-fastq_2', '-f2', help='Output R2 fastq file', default="sim.R2.fastq")
-	parser.add_argument('--read-len', '-l', help='length of simulated reads', default=150)	
 	parser.add_argument('--out-info', '-i', help='Output fastq file', default="sim_info.txt")	
-	parser.add_argument('--n-sim', '-n', help='number of reads to simulate', default=100)
+	parser.add_argument('--read-len', '-l', help='length of simulated reads', default=150, type=int)	
+	parser.add_argument('--n-sim', '-n', help='number of reads to simulate', default=100, type=int)
 	parser.add_argument('--seed', '-s', help='seed for random number generator', default=12345, type=int)
 	args = parser.parse_args()
 	
@@ -231,9 +231,8 @@ def sim_reads(barcs, args):
 				read_2 = reverse_complement(frag[-args.read_len:])
 				
 				# write to fastq
-				fastq_1.write(f">read_{id}\n{read_1}\n+\n{''.join(['a']*len(read_1))}\n")
-				fastq_2.write(f">read_{id}\n{read_2}\n+\n{''.join(['a']*len(read_2))}\n")
-		
+				fastq_1.write(f"@read_{id}\n{read_1}\n+\n{''.join(['A']*len(read_1))}\n")
+				fastq_2.write(f"@read_{id}\n{read_2}\n+\n{''.join(['A']*len(read_2))}\n")		
 	
 def make_header(barcs):
 	"""

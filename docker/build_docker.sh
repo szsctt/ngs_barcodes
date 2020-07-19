@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 cp ../setup/env.yml .
@@ -13,4 +14,4 @@ perl -pe "s/src/\/src/g" Snakefile.bak > Snakefile
 
 
 
-sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:3
+sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:4
