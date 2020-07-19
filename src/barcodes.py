@@ -431,21 +431,25 @@ def parse_barcs_yaml(args):
 	
 	# read barcodes yaml
 	with open(args.barcodes, 'r') as stream:
-		try:
-			barcodes = yaml.safe_load(stream)
-		except yaml.YAMLError as exc:
-			print(exc)
+		barcodes = yaml.safe_load(stream)
+		
+	assert isinstance(barcodes, list)
 			
 	print(f"found {len(barcodes)} sets of barcodes")
 	names = []
 	
 	# check that barcodes are specified correctly
 	for i in range(len(barcodes)):
+		assert isinstance(barcodes[i], dict)
+		assert len(barcodes[i]) == 1
 		try:
 			name = list(barcodes[i].keys())[0]
 			names.append(name)
 			# if this set is constant, check it contains a start and some sequences
 			if barcodes[i][name]['type'] == 'constant':
+			
+				assert 'barcodes' in barcodes[i][name]
+				assert 'start' in barcodes[i][name]
 				num_barcs = len(barcodes[i][name]['barcodes'])
 				start = barcodes[i][name]['start']
 				
@@ -463,6 +467,10 @@ def parse_barcs_yaml(args):
 				
 			# if this set is variable, check it contains a before and after sequence
 			elif barcodes[i][name]['type'] == 'variable':
+			
+				assert 'before' in barcodes[i][name]
+				assert 'after' in barcodes[i][name]
+				
 				before = barcodes[i][name]['before']
 				after = barcodes[i][name]['after']
 				print(f"set {name} will consist of all the sequences occuring between sequences {before} and {after} in the read")
