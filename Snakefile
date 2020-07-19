@@ -37,7 +37,7 @@ rule fastqc_input_r1:
 	input:
 		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
 	output:
-		r1_zip =  temp("out/qc_input/{sample}{suffix1}.zip"),
+		r1_zip =  "out/qc_input/{sample}{suffix1}_fastqc.zip",
 	params:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
 		zip_path1=lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{wildcards.suffix1}_fastqc.zip",
@@ -55,7 +55,7 @@ rule fastqc_input_r2:
 	input:
 		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
 	output:
-		r2_zip =  temp("out/qc_input/{sample}{suffix2}.zip")
+		r2_zip =  "out/qc_input/{sample}{suffix2}_fastqc.zip"
 	params:
 		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{wildcards.suffix2}_fastqc.zip",
 		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
@@ -70,8 +70,9 @@ rule fastqc_input_r2:
 		
 def multiqc_input(wildcards):
 	
-	files  = [f"out/qc_input/{samp}{suffix_R1[samp]}.zip" for samp in config.keys()]
-	files2 = [f"out/qc_input/{samp}{suffix_R2[samp]}.zip" for samp in config.keys()]
+	files  = [f"out/qc_input/{samp}{suffix_R1[samp]}_fastqc.zip" for samp in config.keys()]
+	files2 = [f"out/qc_input/{samp}{suffix_R2[samp]}_fastqc.zip" for samp in config.keys()]
+	print(files + files2)
 	return files + files2
 		
 rule multiqc:
@@ -83,7 +84,9 @@ rule multiqc:
 		outdir = lambda wildcards, output: path.dirname(output[0])
 
 	shell:
-		"multiqc {input} -f --outdir {params.outdir}"
+		"""
+		multiqc "out/qc_input/" -f --outdir {params.outdir}
+		"""
 		
 #### merging ####
 
@@ -93,9 +96,9 @@ rule merge:
 		r1 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R1_pattern']}",
 		r2 = lambda wildcards: f"{path.normpath(config[wildcards.sample]['path'])}/{wildcards.sample + config[wildcards.sample]['R2_pattern']}"
 	output:
-		merged = temp("out/{sample}/{sample}.merged.fastq.gz"),
-		proc_r1 = temp("out/{sample}/{sample}.unmerged_R1.fastq.gz"),
-		proc_r2 = temp("out/{sample}/{sample}.unmerged_R2.fastq.gz")
+		merged = "out/{sample}/{sample}.merged.fastq.gz",
+		proc_r1 = "out/{sample}/{sample}.unmerged_R1.fastq.gz",
+		proc_r2 = "out/{sample}/{sample}.unmerged_R2.fastq.gz"
 	params:
 		A = lambda wildcards: config[wildcards.sample]["adapter1"],
 		B = lambda wildcards: config[wildcards.sample]["adapter2"]
@@ -111,7 +114,7 @@ rule filter:
 	input:
 		"out/{sample}/{sample}.merged.fastq.gz"
 	output:	
-		temp("out/{sample}/{sample}.merged.filtered.fastq")
+		"out/{sample}/{sample}.merged.filtered.fastq"
 	params:
 		min_len = lambda wildcards: config[wildcards.sample]["min_length"],
 		max_len = lambda wildcards: config[wildcards.sample]["max_length"]
