@@ -119,8 +119,8 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 					dropped_count += 1
 					if debug is True:
 						info['dropped'] = True
-						info['reversed'] = NA
-						info['barcodes'] = NA
+						info['reversed'] = 'NA'
+						info['barcodes'] = 'NA'
 					continue
 					
 			# check for multiple matches
