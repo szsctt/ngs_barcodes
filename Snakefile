@@ -167,6 +167,12 @@ def debug_flag(wildcards):
 		return f"--debug --debug-output {config[wildcards.sample]['debug_folder']}"
 	else:
 		return ""
+		
+def debug_folder(wildcards):
+	if "debug_folder" in config[wildcards.sample]:
+		return f"mkdir -p {config[wildcards.sample]['debug_folder']}"
+	else:
+		return ""
 
 #run script to count barcodes
 rule count:
@@ -179,10 +185,12 @@ rule count:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
 		prim = lambda wildcards: f"--fPrimer {config[wildcards.sample]['fwdPrimer']}" if "fwdPrimer" in config[wildcards.sample] else "",
 		translate =  translate_flag,
-		debug = debug_flag
+		debug = debug_flag,
+		debug_folder = debug_folder
 			
 	shell:
 		"""
+		{params.debug_folder}
 		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {input.reads} --out {output} {params.prim} {params.translate} {params.debug}
 		"""
 		
