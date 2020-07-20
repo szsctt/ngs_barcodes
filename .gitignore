@@ -8,3 +8,5 @@ docker/Snakefile
 docker/barcodes.py
 docker/env.yml
 default.profraw
+docker/Snakefile.bak
+docker/sim.py
