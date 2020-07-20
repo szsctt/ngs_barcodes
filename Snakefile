@@ -72,7 +72,6 @@ def multiqc_input(wildcards):
 	
 	files  = [f"out/qc_input/{samp}{suffix_R1[samp]}_fastqc.zip" for samp in config.keys()]
 	files2 = [f"out/qc_input/{samp}{suffix_R2[samp]}_fastqc.zip" for samp in config.keys()]
-	print(files + files2)
 	return files + files2
 		
 rule multiqc:
