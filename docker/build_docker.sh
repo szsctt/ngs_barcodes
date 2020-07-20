@@ -14,4 +14,4 @@ perl -pe "s/src/\/src/g" Snakefile.bak > Snakefile
 
 
 
-sudo docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:4
+docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:4
