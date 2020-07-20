@@ -90,6 +90,7 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 		writer = csv.DictWriter(debug_info_handle, 
 								fieldnames = ['read_name', 'dropped', 'reversed', 'barcodes'],
 								delimiter = '\t')
+		writer.writeheader()
 		
 		
 	
@@ -136,7 +137,7 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 					info['dropped'] = False
 			else:
 				if debug is True:
-					info['reversed'] = True
+					info['reversed'] = False
 					info['dropped'] = False
 					
 			# check for barcodes
