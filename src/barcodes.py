@@ -28,6 +28,7 @@ from Bio.Alphabet import generic_dna
 import gzip
 from mimetypes import guess_type
 from functools import partial
+import csv
 import pdb
 
 # for reverse complmenting
@@ -50,6 +51,7 @@ def main(argv):
 	# check arguments
 	if args.debug is True:
 		path.isdir(args.debug_output)
+		# make csv
 
 	# parse barcodes yaml
 	barcs = parse_barcs_yaml(args)
@@ -59,20 +61,13 @@ def main(argv):
 	
 	# count barcodes and write output
 	if args.debug is False:
-	
-		counts = count_barcodes(args, search, False)
-		write_counts(args.out, counts, search)
+		counts = count_barcodes(args, search, False)	
 	else:
-		counts, counts_rev = count_barcodes(args, search, True)
+		counts = count_barcodes(args, search, True, args.debug_output)
 		
-		# write forward counts
-		fwd_filename = path.splitext(args.out)[0] + ".forward.txt"
-		write_counts(fwd_filename, counts, search)
 		
-		# write reverse counts
-		rev_filename = path.splitext(args.out)[0] + ".reverse.txt"
-		write_counts(rev_filename, counts_rev, search)
-
+		# write info
+	write_counts(args.out, counts, search)
 	
 	print(f"saved counts in file {args.out}")
 
@@ -89,7 +84,14 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 	counts = {} # to store counts of combinations of barcodes
 	
 	if debug is True:
-		counts_rev = {}
+		info = {}
+		debug_info = path.realpath(debug_read_folder + "/debug_info.tsv")
+		debug_info_handle = open(debug_info, "w", newline = "")
+		writer = csv.DictWriter(debug_info_handle, 
+								fieldnames = ['read_name', 'dropped', 'reversed', 'barcodes'],
+								delimiter = '\t')
+		
+		
 	
 	# open fastq file and read every second line of four (lines with sequences)
 	# handle gzipped files as well as non-gzipped
@@ -99,8 +101,10 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 
 	with _open(args.fastq) as handle:
 		for record in SeqIO.parse(handle, "fastq"):
+			if debug is True:
+				info['read_name'] = record.id
+		
 			# check for forward primer in read:
-
 			reversed = False
 			
 			# check for forward primer in read - if not found, take reverse complement
@@ -113,6 +117,10 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 				# if we still can't find it, drop this read
 				if n_matches == 0:
 					dropped_count += 1
+					if debug is True:
+						info['dropped'] = True
+						info['reversed'] = NA
+						info['barcodes'] = NA
 					continue
 					
 			# check for multiple matches
@@ -123,28 +131,35 @@ def count_barcodes(args, search, debug=False, debug_read_folder = ""):
 					
 			if reversed is True:
 				rev_count += 1
+				if debug is True:
+					info['reversed'] = True
+					info['dropped'] = False
+			else:
+				if debug is True:
+					info['reversed'] = True
+					info['dropped'] = False
 					
 			# check for barcodes
 			found_barcs = find_barcodes_in_line(str(record.seq), search)
+
 			checked_count += 1
+			if debug is True:
+				info['barcodes'] = "__".join(found_barcs)
 			
 			# increment count for this combination
 			if debug is True:
-				if reversed is True:
-					counts_rev = increment_counter(counts_rev, found_barcs)
-				else:
-					counts = increment_counter(counts, found_barcs)
-			else:
-				counts = increment_counter(counts, found_barcs)
+				writer.writerow(info)
+				
+			counts = increment_counter(counts, found_barcs)
 	
 	print(f"checked {checked_count} reads in total; {rev_count} of these were correctly reversed")
 	print(f"dropped {dropped_count} read(s) because forward primer could not be identified in forward or reverse orientation")	
 	print(f"forward primer appeared more than once in {ambiguous_fPrimer} reads: if this number is high, consider re-running with a longer forward primer sequence")	
 	
-	if debug is False:
-		return counts
-	else:
-		return counts, counts_rev
+	if debug is True:
+		debug_info_handle.close()
+		
+	return counts
 	
 def construct_search(barcodes, args):
 	"""
