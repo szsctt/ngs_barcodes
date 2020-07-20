@@ -213,7 +213,7 @@ def sim_reads(barcs, args):
 		
 			for id in range(args.n_sim):
 				# generate fragment sequence
-				frag, info = make_frag(barcs, rng)
+				frag, info, name = make_frag(barcs, rng)
 				
 				
 				# 50% chance of reverse complementing read
@@ -231,8 +231,8 @@ def sim_reads(barcs, args):
 				read_2 = reverse_complement(frag[-args.read_len:])
 				
 				# write to fastq
-				fastq_1.write(f"@read_{id}\n{read_1}\n+\n{''.join(['A']*len(read_1))}\n")
-				fastq_2.write(f"@read_{id}\n{read_2}\n+\n{''.join(['A']*len(read_2))}\n")		
+				fastq_1.write(f"@read_{id}__{name}\n{read_1}\n+\n{''.join(['A']*len(read_1))}\n")
+				fastq_2.write(f"@read_{id}__{name}\n{read_2}\n+\n{''.join(['A']*len(read_2))}\n")		
 	
 def make_header(barcs):
 	"""
@@ -261,6 +261,7 @@ def make_frag(barcs, rng):
 
 	frag = [value['before'] for value in barcs[0].values()]
 	info = []
+	read_names = []
 	
 	for barcs_set in barcs:
 		# append name of set to info
@@ -283,10 +284,12 @@ def make_frag(barcs, rng):
 			# get a random name
 			barc_name = str(rng.choice(names, p = probs))
 			info.append(barc_name)
+			read_names.append(barc_name)
 			
 			# append barcode sequence to frags
 			frag.append(barcs_set[name]['barcodes'][barc_name]['seq'])
 			info.append(barcs_set[name]['barcodes'][barc_name]['seq'])
+			
 			
 			
 		elif barcs_set[name]['type'] == "variable":
@@ -305,12 +308,13 @@ def make_frag(barcs, rng):
 			seq = "".join(np.random.choice(["A", "C", "G", "T"], length))
 			info.append(seq)
 			frag.append(seq)
+			read_names.append(seq)
 		
 		# append after sequence
 		frag.append(barcs_set[name]['after'])
 	
 	
-	return "".join(frag), info
+	return "".join(frag), info, "__".join(read_names)
 	
 def reverse_complement(seq):
 	"""
