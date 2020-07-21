@@ -18,7 +18,6 @@ for sample in config:
 # load config file specifiying samples and parameters
 # configfile: "config.yml" # supply on command line
 	
-	
 #### wildcard constraints
 wildcard_constraints:
 	sample = "|".join(list(config.keys())),
