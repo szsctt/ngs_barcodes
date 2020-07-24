@@ -335,7 +335,7 @@ def find_barcodes_in_line(line, search):
 			
 			# check if subread matches any of the barcodes
 			for name, barcode in set['forward_search'].items():
-				if re.findall(barcode, subread_forward):
+				if re.findall(barcode, subread_forward, re.IGNORECASE):
 					matches.append(name)
 
 			# check how many matches we found
@@ -352,7 +352,7 @@ def find_barcodes_in_line(line, search):
 			
 			# match regexes
 			for regex in regexes:
-				match = re.findall(regex, line)
+				match = re.findall(regex, line, re.IGNORECASE)
 				for m in match:
 					if m not in matches:
 						matches.append(m)
@@ -364,7 +364,7 @@ def find_barcodes_in_line(line, search):
 				for regex in regexes:
 					# check if we found both the 'before' and 'after' sequence
 					before, after = regex.split('(.*)')
-					if bool(re.search(before, line)) and bool(re.search(after, line)):
+					if bool(re.search(before, line, re.IGNORECASE)) and bool(re.search(after, line, re.IGNORECASE)):
 						int_type = 'no_insertion'
 						break
 				# if we didn't find a regex above, then there wasn't a match
