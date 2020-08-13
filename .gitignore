@@ -4,8 +4,10 @@ test_data
 .DS_Store
 .Rproj.user
 data
-docker/Snakefile
+docker/Snakefile*
 docker/barcodes.py
 docker/env.yml
+docker/sim.py
 default.profraw
 barcodes_docker
+*.tar.gz
