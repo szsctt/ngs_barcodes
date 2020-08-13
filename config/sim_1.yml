@@ -1,0 +1,40 @@
+- test2: 
+    type: constant
+    before: "caacttctatggggtctagcagagccagcactgagaaccagcaaaccaggcttttactcttag" # required only for the first set of barcodes
+    after: "gttctttgagtttccaatctgggagtgaatgtcaagttcggagtccacaattgtgtctgactca"
+    barcodes:
+        test2_0: 
+            seq: TTTACA
+            prob: 0.5 
+        test2_1: 
+            seq: GTCATC
+            prob: 0.5
+            
+- test3: 
+    type: constant
+    after: "agaatacttaaaagcaaatgaagctggtggggtttctgggtcattttatcagaatacttaaaagcaaatg"
+    barcodes:
+        test3_0: 
+            seq: TTT
+            prob: 0.1 
+        test3_1: 
+            seq: TAC
+            prob: 0.05
+        test3_2: 
+            seq: AAA
+            prob: 0.2 
+        test3_3: 
+            seq: TCT
+            prob: 0.05
+        test3_4: 
+            seq: AAT
+            prob: 0.05 
+        test3_5: 
+            seq: TCA
+            prob: 0.025
+        test3_6: 
+            seq: ACA
+            prob: 0.5 
+        test3_7: 
+            seq: ACT
+            prob: 0.025

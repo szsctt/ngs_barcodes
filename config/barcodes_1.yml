@@ -1,0 +1,21 @@
+- test2: 
+    type: constant
+    mismatches: 0 
+    start: 63 
+    barcodes:
+        test2_0: TTTACA
+        test2_1: GTCATC
+
+- test3: 
+    type: constant
+    mismatches: 0 
+    start: 133 
+    barcodes:
+        test3_0: TTT
+        test3_1: TAC
+        test3_2: AAA
+        test3_3: TCT
+        test3_4: AAT
+        test3_5: TCA
+        test3_6: ACA
+        test3_7: ACT

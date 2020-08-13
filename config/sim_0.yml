@@ -1,0 +1,22 @@
+- test0: 
+    type: constant
+    before: "" # required only for the first set of barcodes
+    after: "cactaagcacacagagaataatgtctagaatctgagtgccatgttatcaaattgtactgagactcttgcagtcacacaggctgac"
+    barcodes:
+        test0_0: 
+            seq: AGGTAC
+            prob: 0.5 # sum of probabilties for each set must sum to 1
+        test0_1: 
+            seq: GTCGTG
+            prob: 0.25
+        test0_2: 
+            seq: GTCTAA
+            prob: 0.25
+            
+
+- test1:
+    type: variable
+    after: "aggaccacaaaatacacaaaaattatgtagcaaagcctatagcctgaaaaagtaaacattgaaatttgtatgtccata"
+    min_len: 0 # minimum length of insertion
+    max_len: 12 # maximum length of insertion
+    len_multiple: 3 # length of insertion must be a multiple of 3
