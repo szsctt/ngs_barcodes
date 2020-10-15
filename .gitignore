@@ -9,5 +9,6 @@ docker/barcodes.py
 docker/env.yml
 docker/sim.py
 default.profraw
-barcodes_docker
 *.tar.gz
+docker/Snakefile.bak
+docker/sim.py
