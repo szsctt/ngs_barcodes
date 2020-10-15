@@ -29,8 +29,8 @@ wildcard_constraints:
 rule all:
 	input: 
 		expand("out/{sample}_counts.txt", sample = config.keys()),
-		"out/qc_input/multiqc_report.html",
-		"out/qc_filt/multiqc_report.html"
+		#"out/qc_input/multiqc_report.html",
+		#"out/qc_filt/multiqc_report.html"
 		
 rule fastqc_input_r1:
 	input:
