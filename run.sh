@@ -19,11 +19,6 @@ fi
 echo "pulling docker image..."
 docker pull szsctt/barcodes:5_docker
 
-# data must always be stored in data/ (in folder called 'data' within current directory)
-# for this example, we simulate some data and save it in /data
-DATADIR="data/"
-rm -rf ${DATADIR}
-mkdir -p ${DATADIR}
 
 # this is the location within the container that we will find the contents of the current directory
 MOUNTDIR="/usr/local"
