@@ -41,7 +41,7 @@ rule fastqc_input_r1:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
 		zip_path1=lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{wildcards.suffix1}_fastqc.zip",
 		tempdir1 = lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1",
-	
+	container: "docker://szsctt/barcodes:5_docker"	
 	shell: 
 		"""
 		mkdir -p {params.tempdir1}
@@ -58,7 +58,7 @@ rule fastqc_input_r2:
 	params:
 		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{wildcards.suffix2}_fastqc.zip",
 		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
-	
+	container: "docker://szsctt/barcodes:5_docker"		
 	shell: 
 		"""
 		mkdir -p {params.tempdir2}
@@ -80,7 +80,7 @@ rule multiqc:
 		"out/qc_input/multiqc_report.html"
 	params:
 		outdir = lambda wildcards, output: path.dirname(output[0])
-
+	container: "docker://szsctt/barcodes:5_docker"	
 	shell:
 		"""
 		multiqc "out/qc_input/" -f --outdir {params.outdir}
@@ -100,6 +100,7 @@ rule merge:
 	params:
 		A = lambda wildcards: config[wildcards.sample]["adapter1"],
 		B = lambda wildcards: config[wildcards.sample]["adapter2"]
+	container: "docker://szsctt/barcodes:5_docker"	
 	shell:
 		"""
 		bbmerge.sh in1="{input.r1}" in2="{input.r2}" out="{output.merged}" outu1="{output.proc_r1}" outu2="{output.proc_r2}" adapter1={params.A} adapter2={params.B}
@@ -116,6 +117,7 @@ rule filter:
 	params:
 		min_len = lambda wildcards: config[wildcards.sample]["min_length"],
 		max_len = lambda wildcards: config[wildcards.sample]["max_length"]
+	container: "docker://szsctt/barcodes:5_docker"		
 	shell:
 		"""
 		bbduk.sh in={input} out={output} minlen={params.min_len} maxlen={params.max_len}
@@ -130,7 +132,7 @@ rule fastqc_filtered:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
 		zip_path1=lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}/{wildcards.sample}.merged.filtered_fastqc.zip",
 		tempdir1 = lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}",
-
+	container: "docker://szsctt/barcodes:5_docker"		
 	shell: 
 		"""
 		mkdir -p {params.tempdir1}
@@ -146,7 +148,7 @@ rule multiqc_filtered:
 		"out/qc_filt/multiqc_report.html"
 	params:
 		outdir = lambda wildcards, output: path.dirname(output[0])
-
+	container: "docker://szsctt/barcodes:5_docker"	
 	shell:
 		"multiqc {input} -f --outdir {params.outdir}"
 
@@ -186,7 +188,7 @@ rule count:
 		translate =  translate_flag,
 		debug = debug_flag,
 		debug_folder = debug_folder
-			
+	container: "docker://szsctt/barcodes:5_docker"				
 	shell:
 		"""
 		{params.debug_folder}
