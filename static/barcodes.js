@@ -1,6 +1,24 @@
 // https://stackoverflow.com/questions/12504042/what-is-a-method-that-can-be-used-to-increment-letters/34483399
 function nextChar(c) {
-	return String.fromCharCode(c.charCodeAt(0) + 1);
+	// increment character.  after 'z' comes 'za', and after 'za' comes 'zb'
+	
+	// get last character of string to increment
+	if (c.length > 1) {
+		var toIncrement = c.substring(c.length-1, c.length);
+		var restOfString = c.substring(0, c.length-1);
+	} else {
+		var toIncrement = c;
+		var restOfString = '';
+	}
+	
+	// if last character is z or Z, add a to end of string and return
+	if (toIncrement == 'z') {
+		return 	c.concat('a');
+	} else if (toIncrement == 'Z') {
+		return c.concat('A');
+	} else {
+		return restOfString.concat(String.fromCharCode(toIncrement.charCodeAt(0) + 1));	
+	}
 }
 
 // https://www.javascripttutorial.net/dom/manipulating/insert-an-element-after-an-existing-element/
@@ -234,3 +252,10 @@ function addBarcode(id) {
 	insertAfter(new_set, document.querySelector(`#${set_let}_${last_let}_barc`));
 	
 }
+
+
+function validateForm() {
+
+	return true;
+}
+

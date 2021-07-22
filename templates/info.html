@@ -7,20 +7,32 @@
         </title>
     </head>
     <body>
-    	<h1>Barcode information</h1>
-    	<p>Add all barcode information on this page. 
-    	Barcodes are arranged into sets which occur at the same place in the read.  
-    	A set of barcodes can be 'variable' or 'constant'.  
+    	<h1>Barcode analysis</h1>
+    	<p> This is a wrapper around a barcode counting pipeline that will count barcodes
+    	in one or more pairs of NGS read files. </p>
+    	<h2>Barcode information</h2>
+    	<p> Barcodes are arranged into sets which occur at 
+    	the same place in the read. A set of barcodes can be 'variable' or 'constant'.  
     	A 'constant' set of barcodes consists of the set of all sequences that can
     	be found at a specified place in the read.  All barcodes in a constant set must 
     	have the same length.  A 'variable' set of barcodes consists of all the sequences
     	found between the 'before' sequence and the 'after' sequence.  These 'barcodes' 
-    	may be of any length. 
+    	may be of any length.  </p>
+    	<p>If you already have a yaml file specifying barcodes, upload it below. Otherwise, click 'add set' and fill in all boxes.</p>
     	</p>
-    	<form method="POST" action="">
+ 		 {% if errors %}
+ 		 <div>
+ 		 	{% for error in errors %}
+   				<p class=error><strong>Error:</strong> {{ error }}
+   			{% endfor %}
+   			<p> Please fix errors in form below or re-upload YAML file </p>
+   		</div>
+ 		 {% endif %} 	
+    	<form method="POST" action="" enctype="multipart/form-data">
+      		<p>Upload yaml: <input class = "upload_yaml" type="file" name="file"></button></p>  
       		<button class="new_const" type="button" onClick="addConstSet()">Add constant set</button>
       		<button class = "new_var" type="button" onClick="addVarSet()">Add variable set</button>
-      		<p><input type="submit" value="Continue" id="submit"></p>
+      		<p><input type="submit" value="Continue" onClick="validateForm()" id="submit"></p>
 		</form>    
 	<script type="text/javascript" src="{{url_for('static', filename='barcodes.js')}}"></script>
     </body>
