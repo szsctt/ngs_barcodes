@@ -1,15 +1,6 @@
-<!DOCTYPE html>
-<html>
-    <head>
-    	<link rel="shortcut icon" href="#">
-        <title>
-           Barcode analysis
-        </title>
-    </head>
-    <body>
-    	<h1>Barcode analysis</h1>
-    	<p> This is a wrapper around a barcode counting pipeline that will count barcodes
-    	in one or more pairs of NGS read files. </p>
+{% extends "base.html" %}
+{% block title %}Barcode information{% endblock %}
+{% block content %}
     	<h2>Barcode information</h2>
     	<p> Barcodes are arranged into sets which occur at 
     	the same place in the read. A set of barcodes can be 'variable' or 'constant'.  
@@ -18,7 +9,9 @@
     	have the same length.  A 'variable' set of barcodes consists of all the sequences
     	found between the 'before' sequence and the 'after' sequence.  These 'barcodes' 
     	may be of any length.  </p>
-    	<p>If you already have a yaml file specifying barcodes, upload it below. Otherwise, click 'add set' and fill in all boxes.</p>
+    	<p>If you already have a yaml file specifying barcodes, upload it below. 
+		The YAML format has specific requirements about whitespace.  If you're having issues, please
+    	use <a href="http://www.yamllint.com/" target="_blank" rel="noreferrer noopener">YAML Lint</a> to check your file is valid.</p>
     	</p>
  		 {% if errors %}
  		 <div>
@@ -35,7 +28,6 @@
       		<p><input type="submit" value="Continue" onClick="validateForm()" id="submit"></p>
 		</form>    
 	<script type="text/javascript" src="{{url_for('static', filename='barcodes.js')}}"></script>
-    </body>
-</html>
+{% endblock %}
 
 

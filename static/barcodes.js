@@ -193,11 +193,11 @@ function createBarcode(set_let, next_let) {
 	// create a new fieldset
 	var new_set = document.createElement("fieldset");
 	new_set.setAttribute("id", [set_let, next_let, "barc"].join("_"));
-	new_set.setAttribute("class", "`${set_let} ${next_let} barc field`")
+	new_set.setAttribute("class", `${set_let} ${next_let} barc field`)
 	
 	// create a label for the barcode
 	var label = document.createElement("p");
-	label.setAttribute("class", "`${set_let} ${next_let} barc`")
+	label.setAttribute("class", `${set_let} ${next_let} barc`)
 	var text = document.createTextNode("Barcode: ");
 	label.appendChild(text);
 	

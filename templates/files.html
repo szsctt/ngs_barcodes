@@ -1,17 +1,28 @@
-<!DOCTYPE html>
-<html>
-
-    <head>
-    	<link rel="shortcut icon" href="#">
-        <title>
-           Barcode analysis
-        </title>
-    </head>
-    <body>
-    	<h1>File submission</h1>
-    	<p>Add all barcode information on this page. 
-    	Select the reads to be analysed here, and select which sets of barcodes are to be identified in each set of reads.
-    	</p>
-    </body>
-
-</html>
+{% extends "base.html" %}
+{% block title %}Read files{% endblock %}
+{% block content %}
+	<h1>File submission</h1>
+	<p>
+	Select the reads to be analysed here, and select which sets of barcodes are to be identified in each set of reads.
+	</p>
+		{% if error %}
+   			<p class=error><strong>Error:</strong> {{ error }}
+ 		 {% endif %} 	
+	
+    <form method="POST" action="" enctype="multipart/form-data">
+    	<fieldset id=fastqset_0>
+    	<label for="fastqset_name_0">Name: </label>
+    	<input type="text" id="fastqset_name_0" name="fastqset_name_0"></p>
+        <p>Read 1 file: <input class = "upload_reads" type="file" name="R1_0"></button></p>  
+        <p>Read 2 file: <input class = "upload_reads" type="file" name="R2_0"></button></p> 
+		<div>
+		Barcodes to use for this pair of files: 
+		{% for barc in barcode_names %}
+		<input type="checkbox" id={{ barc }}_0 name={{ barc }}_0 value={{ barc }} checked>
+		<label for={{barc}}_1>{{ barc }}	</label>
+		{% endfor %} 
+		</div>       
+        </fieldset>
+      	<p><input type="submit" value="Continue" id="submit"></p>
+    </form>
+{% endblock %}

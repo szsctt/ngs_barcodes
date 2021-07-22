@@ -1,6 +1,11 @@
 import re
 import yaml
+import os
 import pdb
+
+from werkzeug.utils import secure_filename
+
+from setup import ALLOWED_EXTENSIONS_YAML
 
 
 def parse_barcode_file(filename):
@@ -23,7 +28,7 @@ def parse_barcode_file(filename):
 		return None, "Can't identify any sets of barcodes uploaded file"		
 	
 	# check each barcode set
-	for i, set in enumerate(barcodes):
+	for set in barcodes:
 		
 		# if set isn't a dictionary
 		if not isinstance(set, dict):
@@ -55,7 +60,6 @@ def parse_barcode_file(filename):
 			return None, err
 	
 	return barcodes, None
-
 
 def check_constant_set(set, set_name):
 	"""
@@ -97,7 +101,6 @@ def check_constant_set(set, set_name):
 	
 	return None
 	
-	
 def check_variable_set(set, set_name):
 	"""
 	Check if a variable set of barcodes is valid
@@ -120,7 +123,6 @@ def check_variable_set(set, set_name):
 	
 	return None
 
-
 def check_seq(seq):
 	"""
 	Check that a string looks like a DNA sequence (composed of only A/C/G/T)
@@ -130,8 +132,7 @@ def check_seq(seq):
 	if len(seq) == 0:
 		return False
 	
-	return all([let.lower() in {'a', 'c', 'g', 't'} for let in seq])
-		
+	return all([let.lower() in {'a', 'c', 'g', 't'} for let in seq])	
 
 def parse_form(form):
 	"""
@@ -179,7 +180,6 @@ def parse_form(form):
 	
 	return yaml, errors
 
-
 def num_to_str(num):
 	"""
 	Convert a number to a string, where 0 is 'a', 25 is 'z', 26 is 'za' and 27 is 'zb'
@@ -189,8 +189,6 @@ def num_to_str(num):
 	last_let = num % 26
 	
 	return 'z' * num_zs + chr(97 + last_let)
-	
-
 	
 def parse_constant(set, set_letter):
 	"""
@@ -216,8 +214,7 @@ def parse_constant(set, set_letter):
 		
 	
 	return yaml_set
-	
-	
+		
 def parse_variable(set, set_letter):
 	"""
 	Convert flat dict to correct format for a variable set of barcodes
@@ -235,3 +232,68 @@ def parse_variable(set, set_letter):
 	yaml_set['translate'] = set[f"{set_letter}_translate"]
 	
 	return yaml_set
+	
+def allowed_file_yaml(filename):
+	"""
+	Check if filename extension is allowed for YAML
+	"""
+	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS_YAML
+
+def save_read_files(request_files, session):
+	"""
+	Save R1 and R2 files input by user
+	"""
+	
+	R1_file_keys = [key for key in request_files if re.search("R1_\d+", key)]
+	session['fastq_files'] = []
+	
+	
+	for i, R1 in enumerate(R1_file_keys):
+		
+		# check for no file uploaded
+		if request_files[R1].filename == "":
+			del session['fastq_files']
+			return "Please specify all files"
+			
+		session['fastq_files'].append([])
+		
+		# save R1
+		filepath = os.path.join(session['folder'], secure_filename(request_files[R1].filename))
+		request_files[R1].save(filepath)
+		session['fastq_files'][i].append(filepath)
+			
+		# save R2
+		R2 = re.sub("R1_", "R2_", R1)	
+				
+		# check for no file uploaded
+		if request_files[R2].filename == "":
+			del session['fastq_files']
+			return "Please specify all files"
+			
+		
+		filepath = os.path.join(session['folder'], secure_filename(request_files[R2].filename))
+		request_files[R2].save(filepath)
+		session['fastq_files'][i].append(filepath)
+		
+
+
+def create_filesets(request_form, session):
+	"""
+	Save information about which barcodes go with which files to session
+	"""
+	
+	session['fastq_barcode_assoc'] = []
+	
+	fastqset_names = [key for key in request_form.keys() if re.search("fastqset_name_[0-9]+", key)]
+	fastqset_nums = [int(re.search("fastqset_name_([0-9]+)", key).group(1)) for key in fastqset_names]
+	
+	for num in fastqset_nums:
+	
+		session['fastq_barcode_assoc'].append({})
+	
+		# get sample name by removing suffix from R1 file
+		
+		# check that R2 file has same sample name
+	
+		pdb.set_trace()
+		print(nums)

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <title>{% block title %}{% endblock %} - Barcode analysis</title>
+    {% endblock %}
+</head>
+<body>
+	<div id="title">
+    <h1>Barcode analysis</h1>
+    	<p> This is a wrapper around a barcode counting pipeline that will count barcodes
+    	in one or more pairs of NGS read files. </p>
+    </div>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+    </div>
+</body>
+</html>
+
