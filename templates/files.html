@@ -3,18 +3,47 @@
 {% block content %}
 	<h1>File submission</h1>
 	<p>
-	Select the reads to be analysed here, and select which sets of barcodes are to be identified in each set of reads.
+	Select the reads to be analysed here, and select which sets of barcodes are to be identified in each set of reads.  </p>
+	<p>
+	The file names for pair of read files must have a common part (e.g. for the files 'example-name_R1.fastq' and 'example-name_R2.fastq', the common part is 'example-name').  This common part will be used to identify the output files for this pair of reads.  Specify the common part of the filenames in the input box provided.
+	</p>
+	<p>
+	For each pair of read files, specify the adapter sequences for trimming (i.e. as they would appear if they are sequenced because the fragment length is shorter than expected).  If you don't know what your adapter sequences are, check the <a href="https://support.illumina.com/bulletins/2016/12/what-sequences-do-i-use-for-adapter-trimming.html?langsel=/us/">common Illumina adapter sequences</a>
+	</p>	
+	<p>
+	Also specify thee expected minimum and maximum length of the reads after merging.  These will be used to filter the merged reads.
 	</p>
 		{% if error %}
-   			<p class=error><strong>Error:</strong> {{ error }}
+   			<p class=error><strong>Error:</strong> {{ error }}</p>
  		 {% endif %} 	
 	
     <form method="POST" action="" enctype="multipart/form-data">
     	<fieldset id=fastqset_0>
-    	<label for="fastqset_name_0">Name: </label>
-    	<input type="text" id="fastqset_name_0" name="fastqset_name_0"></p>
-        <p>Read 1 file: <input class = "upload_reads" type="file" name="R1_0"></button></p>  
-        <p>Read 2 file: <input class = "upload_reads" type="file" name="R2_0"></button></p> 
+    	<label for="fastqset_name_0">Sample name: </label>
+    	<input type="text" id="fastqset_name_0" name="fastqset_name_0" placeholder="Common part of read filenames">
+    	<br>
+    	
+    	<label for="R1_adapter_0">Adapter for read 1:</label>
+    	<input class = "adapter" type="text" name="R1_adapter_0" placeholder="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA">
+    	<br>
+    	
+    	<label for="R2_adapter_0">Adapter for read 2:</label>
+    	<input class = "adapter" type="text" name="R2_adapter_0" placeholder="AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT">
+    	<br>
+    	
+    	<label for="min_len_0">Minimum length after merging:</label>
+    	<input class = "read_len" type="text" name="min_len_0" placeholder="150">
+    	<br>
+    	
+    	<label for="max_len_0">Maximum length after merging:</label>
+    	<input class = "read_len" type="text" name="max_len_0" placeholder="150">
+    	<br>
+
+        <label for="R1_0">Read 1 file: </label>
+        <input class = "upload_reads" type="file" name="R1_0">
+    	
+        <label for="R2_0">Read 2 file: </label>
+        <input class = "upload_reads" type="file" name="R2_0">
 		<div>
 		Barcodes to use for this pair of files: 
 		{% for barc in barcode_names %}
@@ -26,3 +55,11 @@
       	<p><input type="submit" value="Continue" id="submit"></p>
     </form>
 {% endblock %}
+
+
+    adapter1: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCA"    # adapters used for sequencing
+    adapter2: "AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT"    # required for better merging   
+    min_length: 152                                  # minimum length of amplicon, including sample barcodes (if present)
+    max_length: 155                                  # maximum length of amplicon, including sample barcodes (if present)
+    fwdPrimer: "ACCACCAGCACCAGAACCTGG"               # specify forward primer common to all reads (ie excluding any barcodes)
+    translate_insertion: True     

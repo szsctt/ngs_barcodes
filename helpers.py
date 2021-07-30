@@ -290,10 +290,74 @@ def create_filesets(request_form, session):
 	for num in fastqset_nums:
 	
 		session['fastq_barcode_assoc'].append({})
-	
-		# get sample name by removing suffix from R1 file
 		
-		# check that R2 file has same sample name
+		# get info from form for this dataset
+		name =  request_form[f"fastqset_name_{num}"]
+		f1 = request_form[f"R1_{num}"]
+		f2 = request_form[f"R1_{num}"]
+		
+		if f1 == "" or f2 == "":
+			return "Please specify all read files"
+	
+		# if a common part of the filenames was specified
+		if name != "":
+			suffix1, suffix2 = check_common_part(name)
+			
+			if suffix1 == "" or suffix2 == "":
+				return f"Couldn't find name {name} in read file names {f1} or {f2}"
+			
+		else:
+			# get common part of the name and suffixes
+			name, suffix1, suffix2 = get_common_part(f1, f2)
+			
+		
+			if sample == "":
+				return f"Read file names {f1} and {f2} do not contain a common part. Are you sure these are correctly paired?"
+		
+		session['fastq_barcode_assoc'][num]['name'] = name
+		session['fastq_barcode_assoc'][num]['R1_suffix'] = suffix1
+		session['fastq_barcode_assoc'][num]['R2_suffix'] = suffix2
+		
 	
 		pdb.set_trace()
 		print(nums)
+
+def check_common_part(part, f1, f2):
+	"""
+	Check that the common part of a filename occurs at the start of f1 and f2.  Return a tuple of the f1 and f2 suffixes (non-common part of the filenames)
+	"""
+	
+	regex = f"^{re.escape(part)}(.+)$"
+	
+	m1 = re.match(regex, f1)
+	if not m1:
+		return "", ""
+	
+	m2 = re.match(regex, f2)
+	if not m2:
+		return "", ""
+		
+	return m1.group(1), m2.group(2)
+	
+
+def get_common_part(f1, f2):
+	"""
+	Get the common part at the start of filenames f1 and f2
+	"""
+	common = ""
+	for i, let in enumerate(f1):
+		if f2[i] == let:
+			common = common + let
+		else:
+			break
+			
+	if i >= len(f1) or i >= len(f2):
+		return "", "", ""
+			
+	suffix1 = f1[i:]
+	suffix2 = f2[i:]
+		
+			
+	return common, suffix1, suffix2
+	
+	
