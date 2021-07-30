@@ -314,10 +314,18 @@ def create_filesets(request_form, session):
 			if sample == "":
 				return f"Read file names {f1} and {f2} do not contain a common part. Are you sure these are correctly paired?"
 		
+		# get adapters
+		
+		
+		# get lengths
+		
+
+		
+		# add info to session
 		session['fastq_barcode_assoc'][num]['name'] = name
 		session['fastq_barcode_assoc'][num]['R1_suffix'] = suffix1
 		session['fastq_barcode_assoc'][num]['R2_suffix'] = suffix2
-		
+
 	
 		pdb.set_trace()
 		print(nums)
