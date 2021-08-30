@@ -23,20 +23,24 @@
     	<input type="text" id="fastqset_name_0" name="fastqset_name_0" placeholder="Common part of read filenames">
     	<br>
     	
-    	<label for="R1_adapter_0">Adapter for read 1:</label>
+    	<label for="R1_adapter_0">Adapter for read 1: </label>
     	<input class = "adapter" type="text" name="R1_adapter_0" placeholder="AGATCGGAAGAGCACACGTCTGAACTCCAGTCA">
     	<br>
     	
-    	<label for="R2_adapter_0">Adapter for read 2:</label>
+    	<label for="R2_adapter_0">Adapter for read 2: </label>
     	<input class = "adapter" type="text" name="R2_adapter_0" placeholder="AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT">
     	<br>
     	
-    	<label for="min_len_0">Minimum length after merging:</label>
+    	<label for="min_len_0">Minimum length after merging: </label>
     	<input class = "read_len" type="text" name="min_len_0" placeholder="150">
     	<br>
     	
-    	<label for="max_len_0">Maximum length after merging:</label>
+    	<label for="max_len_0">Maximum length after merging: </label>
     	<input class = "read_len" type="text" name="max_len_0" placeholder="150">
+    	<br>
+    	
+    	<label for="fwdPrimer_0">Forward primer: </label>
+    	<input class = "primer" type="text" name="fwdPrimer_0">
     	<br>
 
         <label for="R1_0">Read 1 file: </label>
@@ -47,8 +51,8 @@
 		<div>
 		Barcodes to use for this pair of files: 
 		{% for barc in barcode_names %}
-		<input type="checkbox" id={{ barc }}_0 name={{ barc }}_0 value={{ barc }} checked>
-		<label for={{barc}}_1>{{ barc }}	</label>
+		<input type="checkbox" id=barc_{{ barc }}_0 name=barc_{{ barc }}_0 value={{ barc }} checked>
+		<label for=barc_{{barc}}_1>{{ barc }}	</label>
 		{% endfor %} 
 		</div>       
         </fieldset>
