@@ -274,8 +274,6 @@ def save_read_files(request_files, session):
 		filepath = os.path.join(session['folder'], secure_filename(request_files[R2].filename))
 		request_files[R2].save(filepath)
 		session['fastq_files'][i].append(filepath)
-		
-
 
 def create_filesets(request_form, session):
 	"""
@@ -293,15 +291,16 @@ def create_filesets(request_form, session):
 		
 		# get info from form for this dataset
 		name =  request_form[f"fastqset_name_{num}"]
-		f1 = request_form[f"R1_{num}"]
-		f2 = request_form[f"R1_{num}"]
+		
+		f1 = os.path.basename(session['fastq_files'][num][0])
+		f2 = os.path.basename(session['fastq_files'][num][1])
 		
 		if f1 == "" or f2 == "":
 			return "Please specify all read files"
 	
 		# if a common part of the filenames was specified
 		if name != "":
-			suffix1, suffix2 = check_common_part(name)
+			suffix1, suffix2 = check_common_part(name, f1, f2)
 			
 			if suffix1 == "" or suffix2 == "":
 				return f"Couldn't find name {name} in read file names {f1} or {f2}"
@@ -311,30 +310,45 @@ def create_filesets(request_form, session):
 			name, suffix1, suffix2 = get_common_part(f1, f2)
 			
 		
-			if sample == "":
+			if name == "":
 				return f"Read file names {f1} and {f2} do not contain a common part. Are you sure these are correctly paired?"
 		
 		# get adapters
+		adapter1 = request_form[f"R1_adapter_{num}"]
+		if not check_seq(adapter1):
+			return f"Adapter {adapter1} is invalid - please check it and try again"
 		
+		adapter2 = request_form[f"R2_adapter_{num}"]
+		if not check_seq(adapter2):
+			return f"Adapter {adapter2} is invalid - please check it and try again"		
 		
 		# get lengths
-		
+		try:
+			min_len = int(request_form[f"min_len_{num}"])
+		except ValueError:
+			return f"Minimum length {request_form[f'min_len_{num}']} is invalid - please check it and try again"		
+
+		try:
+			max_len = int(request_form[f"max_len_{num}"])
+		except ValueError:
+			return f"Maximum length {request_form[f'max_len_{num}']} is invalid - please check it and try again"			
 
 		
 		# add info to session
 		session['fastq_barcode_assoc'][num]['name'] = name
 		session['fastq_barcode_assoc'][num]['R1_suffix'] = suffix1
 		session['fastq_barcode_assoc'][num]['R2_suffix'] = suffix2
+		session['fastq_barcode_assoc'][num]['adapter1'] = adapter1
+		session['fastq_barcode_assoc'][num]['adapter2'] = adapter2
+		session['fastq_barcode_assoc'][num]['min_len'] = min_len
+		session['fastq_barcode_assoc'][num]['max_len'] = max_len		
 
-	
-		pdb.set_trace()
-		print(nums)
 
 def check_common_part(part, f1, f2):
 	"""
 	Check that the common part of a filename occurs at the start of f1 and f2.  Return a tuple of the f1 and f2 suffixes (non-common part of the filenames)
 	"""
-	
+
 	regex = f"^{re.escape(part)}(.+)$"
 	
 	m1 = re.match(regex, f1)
@@ -345,7 +359,7 @@ def check_common_part(part, f1, f2):
 	if not m2:
 		return "", ""
 		
-	return m1.group(1), m2.group(2)
+	return m1.group(1), m2.group(1)
 	
 
 def get_common_part(f1, f2):
