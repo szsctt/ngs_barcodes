@@ -108,14 +108,17 @@ def submit_files():
 	print(request.form)
 	print(request.files)
 	
+	# save read files
 	err = save_read_files(request.files, session)
-
 	barcode_names = [list(set.keys())[0] for set in session['barcodes']]
 	
 	if err:
 		return render_template("files.html", error = err, barcode_names=barcode_names)
 		
+	# check rest of form info and save to session
 	err = create_filesets(request.form, session)
+	if err:
+		return render_template("files.html", error = err, barcode_names=barcode_names)	
 	
 
 	return render_template("results.html")
@@ -123,6 +126,9 @@ def submit_files():
 
 @app.route('/results')
 def results():
+
+
+	print(session)
 
 	check = check_session(barcodes = True, files = True)
 	if check is not None:
