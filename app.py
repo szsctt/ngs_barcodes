@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
 from werkzeug.utils import secure_filename
 
-from helpers import parse_form, parse_barcode_file, allowed_file_yaml, save_read_files, create_filesets
+from helpers import parse_form, parse_barcode_file, allowed_file_yaml, save_read_files, create_filesets, run_snakemake
 from setup import UPLOAD_FOLDER
 
 import pdb
@@ -104,14 +104,10 @@ def files():
 	
 @app.route('/files', methods=['POST'])
 def submit_files():
-
-	print(request.form)
-	print(request.files)
 	
 	# save read files
 	err = save_read_files(request.files, session)
 	barcode_names = [list(set.keys())[0] for set in session['barcodes']]
-	
 	if err:
 		return render_template("files.html", error = err, barcode_names=barcode_names)
 		
@@ -120,35 +116,31 @@ def submit_files():
 	if err:
 		return render_template("files.html", error = err, barcode_names=barcode_names)	
 	
-
-	return render_template("results.html")
+	# redirect to results
+	return redirect(url_for('results'))
 
 
 @app.route('/results')
 def results():
 
-
-	print(session)
-
 	check = check_session(barcodes = True, files = True)
 	if check is not None:
 		return check
+		
+	# if we haven't already started the analysis
+	if 'proc' not in session:
+		run_snakemake(session)
+		session['running'] = True
+		session['finished'] = False
 
-	#check_session()
-	print("doing some analysis...")
+	if session['proc'].poll() is None:
+		return render_template("results.html")
+		
 	
-	
-	
-	# clean up temp folder
-	session['folder'].cleanup()
-	
-
-	return render_template("results.html")
+		
 
 
 def check_session(barcodes = False, files = False):
-
-	print(session)
 	
 	if barcodes:
 	
@@ -160,7 +152,7 @@ def check_session(barcodes = False, files = False):
 	
 	if files:
 		
-		if 'test' not in session:
+		if 'fastq_files' not in session:
 			return redirect(url_for('files'))
 		
 

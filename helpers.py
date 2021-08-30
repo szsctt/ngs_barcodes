@@ -2,11 +2,10 @@ import re
 import yaml
 import os
 import pdb
-
+import tempfile
+import subprocess
 from werkzeug.utils import secure_filename
-
 from setup import ALLOWED_EXTENSIONS_YAML
-
 
 def parse_barcode_file(filename):
 	"""
@@ -280,14 +279,14 @@ def create_filesets(request_form, session):
 	Save information about which barcodes go with which files to session
 	"""
 	
-	session['fastq_barcode_assoc'] = []
+	session['smk_yml'] = {}
 	
 	fastqset_names = [key for key in request_form.keys() if re.search("fastqset_name_[0-9]+", key)]
 	fastqset_nums = [int(re.search("fastqset_name_([0-9]+)", key).group(1)) for key in fastqset_names]
 	
-	for num in fastqset_nums:
+	names = set()
 	
-		session['fastq_barcode_assoc'].append({})
+	for num in fastqset_nums:
 		
 		# get info from form for this dataset
 		name =  request_form[f"fastqset_name_{num}"]
@@ -333,16 +332,31 @@ def create_filesets(request_form, session):
 		except ValueError:
 			return f"Maximum length {request_form[f'max_len_{num}']} is invalid - please check it and try again"			
 
+		# get forward primer
+		fwdPrimer = request_form[f"fwdPrimer_{num}"]
+		if not check_seq(adapter2):
+			return f"Forward primer {fwdPrimer} is invalid - please check it and try again"		
+
+		# get which barcode set boxes were ticked
+		barcode_sets = [request_form[key] for key in request_form.keys() if re.match(f"barc_(.+)_{num}", key)]
+
+		#check name is unique
+		if name in names:
+			return f"Name {name} was used more than once.  Each pair of fastq files must have a unique name" 
 		
 		# add info to session
-		session['fastq_barcode_assoc'][num]['name'] = name
-		session['fastq_barcode_assoc'][num]['R1_suffix'] = suffix1
-		session['fastq_barcode_assoc'][num]['R2_suffix'] = suffix2
-		session['fastq_barcode_assoc'][num]['adapter1'] = adapter1
-		session['fastq_barcode_assoc'][num]['adapter2'] = adapter2
-		session['fastq_barcode_assoc'][num]['min_len'] = min_len
-		session['fastq_barcode_assoc'][num]['max_len'] = max_len		
+		session['smk_yml'][name] = {}
+		session['smk_yml'][name]['path'] = os.path.dirname(session['fastq_files'][num][0])
+		session['smk_yml'][name]['R1_pattern'] = suffix1
+		session['smk_yml'][name]['R2_pattern'] = suffix2
+		session['smk_yml'][name]['adapter1'] = adapter1
+		session['smk_yml'][name]['adapter2'] = adapter2
+		session['smk_yml'][name]['min_length'] = min_len
+		session['smk_yml'][name]['max_length'] = max_len	
+		session['smk_yml'][name]['fwdPrimer'] = fwdPrimer
+		session['smk_yml'][name]['barcodes'] = barcode_sets
 
+		names.add(name)	
 
 def check_common_part(part, f1, f2):
 	"""
@@ -359,8 +373,7 @@ def check_common_part(part, f1, f2):
 	if not m2:
 		return "", ""
 		
-	return m1.group(1), m2.group(1)
-	
+	return m1.group(1), m2.group(1)	
 
 def get_common_part(f1, f2):
 	"""
@@ -381,5 +394,35 @@ def get_common_part(f1, f2):
 		
 			
 	return common, suffix1, suffix2
+
+def run_snakemake(session):
+
+	# write the barcode sequences for each set of fastq files
+	barcodes_ymls = [session['smk_yml'][name]['barcodes'] for name in session['smk_yml'].keys()]
+	for name in session['smk_yml'].keys():
 	
+		# get the correct sets of barcodes
+		this_barcs = session['smk_yml'][name]['barcodes']
+		write_barcs = [i for i in session['barcodes'] if list(i.keys())[0] in this_barcs]
 	
+		# write barcodes yml file
+		filename = os.path.join(session['smk_yml'][name]['path'], f"{name}_barcodes.yml")
+		with open(filename, 'w') as file:
+			yaml.dump(write_barcs, file)
+			
+		session['smk_yml'][name]['barcodes'] = filename
+		
+	# write config file for snakemake
+	config = os.path.join(session['folder'], f"{next(tempfile._get_candidate_names())}_config.yml")
+	with open(config, 'w') as file:
+		yaml.dump(session['smk_yml'], file)
+		
+	# start subprocess command
+	cmd = ['snakemake', '--jobs', '1', '--configfile', config]
+		
+	session['proc'] = subprocess.Popen(cmd)
+
+		
+		
+		
+		
