@@ -5,8 +5,7 @@ sim_0:
     adapter2: "GTCGTGTAGGGAAAGAGTGT" 
     min_length: 169    
     max_length: 181   
-    fwdPrimer: "cactaagc"   
-    translate_insertion: False     
+    fwdPrimer: "cactaagc"     
     debug_folder: "/usr/local/out/sim_0/"
     barcodes: "/usr/local/config/barcodes_0.yml"  
     path: "/usr/local/data/"   
@@ -17,8 +16,7 @@ sim_1:
     adapter2: "GTCGTGTAGGGAAAGAGTGT"  
     min_length: 169                   
     max_length: 181                   
-    fwdPrimer: "cactaagc"             
-    translate_insertion: False                      
+    fwdPrimer: "cactaagc"                               
     debug_folder: "/usr/local/out/sim_1/"
     barcodes: "/usr/local/config/barcodes_0.yml"   
     path: "/usr/local/data/"    
@@ -29,8 +27,7 @@ sim_2:
     adapter2: "GTCGTGTAGGGAAAGAGTGT"   
     min_length: 206                                
     max_length: 206                              
-    fwdPrimer: "caacttct"              
-    translate_insertion: False                       
+    fwdPrimer: "caacttct"                                   
     debug_folder: "/usr/local/out/sim_2/"
     barcodes: "/usr/local/config/barcodes_1.yml"   
     path: "/usr/local/data/"      
@@ -41,8 +38,7 @@ sim_3:
     adapter2: "GTCGTGTAGGGAAAGAGTGT"   
     min_length: 206                             
     max_length: 206                          
-    fwdPrimer: "caacttct"              
-    translate_insertion: False                      
+    fwdPrimer: "caacttct"                                  
     debug_folder: "/usr/local/out/sim_3/"
     barcodes: "/usr/local/config/barcodes_1.yml" 
     path: "/usr/local/data/"      
