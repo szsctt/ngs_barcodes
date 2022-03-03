@@ -12,3 +12,4 @@ RUN /opt/conda/bin/conda env update -n base -f /tmp/env.yml &&\
 ADD Snakefile /usr/src
 ADD barcodes.py /usr/src/barcodes.py
 ADD sim.py /usr/src/sim.py
+WORKDIR /usr/src
