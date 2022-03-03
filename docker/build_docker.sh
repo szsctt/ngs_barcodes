@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 cp ../setup/env.yml .
 cp ../src/barcodes.py .
 cp ../src/sim.py .
@@ -17,11 +19,11 @@ perl -pe "s/config\[wildcards.sample\]\[\'path\'\]/\'data\/\'/g" Snakefile > Sna
 perl -pe "s/src/\/usr\/src/g" Snakefile.bak > Snakefile
 
 
-docker build . -t szsctt/barcodes:latest_singularity -t szsctt/barcodes:5_singularity -t szsctt/barcodes:latest -t szsctt/barcodes:5
+sudo docker build . -t szsctt/barcodes:latest_singularity -t szsctt/barcodes:5_singularity -t szsctt/barcodes:latest -t szsctt/barcodes:5
 
-docker push szsctt/barcodes:5_singularity
-docker push szsctt/barcodes:latest_singularity
-docker push szsctt/barcodes:latest
+sudo docker push szsctt/barcodes:5_singularity
+sudo docker push szsctt/barcodes:latest_singularity
+sudo docker push szsctt/barcodes:latest
 
 #### docker build ####
 # data mirrored to /usr/local/data/
@@ -32,7 +34,7 @@ perl -pe "s/data\//\/usr\/local\/data\//g" Snakefile > Snakefile.bak
 perl -pe "s/out\//\/usr\/local\/out\//g" Snakefile.bak > Snakefile
 
 
-docker build . -t szsctt/barcodes:latest_docker -t szsctt/barcodes:5_docker 
+sudo docker build . -t szsctt/barcodes:latest_docker -t szsctt/barcodes:5_docker 
 
-docker push szsctt/barcodes:5_docker
-docker push szsctt/barcodes:latest_docker
+sudo docker push szsctt/barcodes:5_docker
+sudo docker push szsctt/barcodes:latest_docker
