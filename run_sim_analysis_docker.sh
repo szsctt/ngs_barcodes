@@ -2,8 +2,6 @@
 set -e
 
 # pull docker image
-echo "pulling docker image..."
-docker pull szsctt/barcodes:5_docker
 
 # data must always be stored in data/ (in folder called 'data' within current directory)
 # for this example, we simulate some data and save it in /data
@@ -11,11 +9,11 @@ DATADIR="data/"
 mkdir -p ${DATADIR}
 
 # this is the location within the container that we will find the contents of the current directory
-MOUNTDIR="/usr/local"
+MOUNTDIR="/usr/local/src"
 
 # simulate some data
 echo "simulating dataset 1, replicate 1..."
-docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker  \
+docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker  \
 python3 /usr/src/sim.py \
 --barcodes "${MOUNTDIR}/config/sim_0.yml" \
 --out-fastq_1 "${MOUNTDIR}/${DATADIR}/sim_0.R1.fq" \
@@ -26,7 +24,7 @@ python3 /usr/src/sim.py \
 --seed 12345
 
 echo "simulating dataset 1, replicate 2..."
-docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker  \
+docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker  \
 python3 /usr/src/sim.py \
 --barcodes "${MOUNTDIR}/config/sim_0.yml" \
 --out-fastq_1 "${MOUNTDIR}/${DATADIR}/sim_1.R1.fq" \
@@ -37,7 +35,7 @@ python3 /usr/src/sim.py \
 --seed 23456
 
 echo "simulating dataset 2, replicate 1..."
-docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker  \
+docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker  \
 python3 /usr/src/sim.py \
 --barcodes "${MOUNTDIR}/config/sim_1.yml" \
 --out-fastq_1 "${MOUNTDIR}/${DATADIR}/sim_2.R1.fq" \
@@ -48,7 +46,7 @@ python3 /usr/src/sim.py \
 --seed 34567
 
 echo "simulating dataset 2, replicate 2..."
-docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker  \
+docker run --rm -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker  \
 python3 /usr/src/sim.py \
 --barcodes "${MOUNTDIR}/config/sim_1.yml" \
 --out-fastq_1 "${MOUNTDIR}/${DATADIR}/sim_3.R1.fq" \
@@ -60,9 +58,9 @@ python3 /usr/src/sim.py \
 
 
 # analyse simulated data
-docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker \
+docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker \
 snakemake \
 --snakefile /usr/src/Snakefile \
 --configfile "${MOUNTDIR}/config/analysis_docker.yml" \
---cores 2
+--cores 1
 

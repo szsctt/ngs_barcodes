@@ -182,6 +182,6 @@ rule count:
 	shell:
 		"""
 		{params.debug_folder}
-		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {input.reads} --out {output} {params.prim} {params.translate} {params.debug}
+		python3 src/barcodes.py --barcodes {params.barcodes} --fastq {input.reads} --out {output} {params.prim} {params.debug}
 		"""
 		

@@ -15,12 +15,12 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # this is the location within the container that we will find the contents of the current directory
-MOUNTDIR="/usr/local"
+MOUNTDIR="/usr/local/src"
 
 # analyse simulated data
 echo 
 echo "analysing data..."
-docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker \
+docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:6_docker \
 snakemake \
 --snakefile /usr/src/Snakefile \
 --configfile "${MOUNTDIR}/${1}" \

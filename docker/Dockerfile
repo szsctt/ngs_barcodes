@@ -11,8 +11,13 @@ COPY env.yml /tmp/env.yml
 RUN micromamba install -y -f /tmp/env.yml && \
     micromamba clean --all --yes
  
-COPY Snakefile /usr/src
+COPY Snakefile /usr/src/Snakefile
 COPY barcodes.py /usr/src/barcodes.py
 COPY sim.py /usr/src/sim.py
+COPY run.sh /usr/src/run.sh
+
+RUN mkdir -p /usr/local /usr/src
 
 WORKDIR /usr/src
+
+#ENTRYPOINT ['snakemake',  '--Snakefile', '/usr/src/Snakefile' ]
