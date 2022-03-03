@@ -1,7 +1,7 @@
-#  $ docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:5
+#  $ docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:6
 #  $ docker run --rm -it szsctt/barcodes:latest /bin/bash
 #  $ docker push szsctt/barcodes:latest
-#  $ docker push szsctt/barcodes:5
+#  $ docker push szsctt/barcodes:6
 
 FROM mambaorg/micromamba:0.22.0
 USER root
@@ -16,8 +16,5 @@ COPY barcodes.py /usr/src/barcodes.py
 COPY sim.py /usr/src/sim.py
 COPY run.sh /usr/src/run.sh
 
-RUN mkdir -p /usr/local /usr/src
-
 WORKDIR /usr/src
 
-#ENTRYPOINT ['snakemake',  '--Snakefile', '/usr/src/Snakefile' ]
