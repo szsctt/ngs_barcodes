@@ -43,7 +43,6 @@ def main(argv):
 	parser.add_argument('--barcodes', '-b', help='Barcodes yaml file specifying barcodes to find', required=True)
 	parser.add_argument('--fPrimer', '-p', help='Constant region of forward primer used for PCR (must be common to all reads)', type=str, required=True)
 	parser.add_argument('--out', '-o', help='Output file', default="counts.txt")
-	parser.add_argument('--translate', '-t', help='Translate variable barcodes?', action='store_true')
 	parser.add_argument('--debug', help='Produce extra output useful for debugging', action='store_true')
 	parser.add_argument('--debug-output', help="output directory for debugging output", default = "out/")
 	args = parser.parse_args()
