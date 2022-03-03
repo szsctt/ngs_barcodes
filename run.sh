@@ -14,12 +14,6 @@ if [ "$#" -ne 1 ]; then
     exit 2
 fi
 
-
-# pull docker image
-echo "pulling docker image..."
-docker pull szsctt/barcodes:5_docker
-
-
 # this is the location within the container that we will find the contents of the current directory
 MOUNTDIR="/usr/local"
 
@@ -30,5 +24,5 @@ docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:5_docker \
 snakemake \
 --snakefile /usr/src/Snakefile \
 --configfile "${MOUNTDIR}/${1}" \
---cores 2
+--jobs 1
 
