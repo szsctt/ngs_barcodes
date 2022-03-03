@@ -19,11 +19,11 @@ perl -pe "s/barcodes2/base/g" env.yml > env.yml.bak
 mv  env.yml.bak  env.yml
 
 
-docker build . -t szsctt/barcodes:latest_singularity -t szsctt/barcodes:5_singularity -t szsctt/barcodes:latest -t szsctt/barcodes:5
+sudo docker build . -t szsctt/barcodes:latest_singularity -t szsctt/barcodes:5_singularity -t szsctt/barcodes:latest -t szsctt/barcodes:5
 
-docker push szsctt/barcodes:5_singularity
-docker push szsctt/barcodes:latest_singularity
-docker push szsctt/barcodes:latest
+sudo docker push szsctt/barcodes:5_singularity
+sudo docker push szsctt/barcodes:latest_singularity
+sudo docker push szsctt/barcodes:latest
 
 #### docker build ####
 # data mirrored to /usr/local/data/
@@ -34,7 +34,7 @@ perl -pe "s/data\//\/usr\/local\/data\//g" Snakefile > Snakefile.bak
 perl -pe "s/out\//\/usr\/local\/out\//g" Snakefile.bak > Snakefile
 
 
-docker build . -t szsctt/barcodes:latest_docker -t szsctt/barcodes:5_docker 
+sudo docker build . -t szsctt/barcodes:latest_docker -t szsctt/barcodes:5_docker 
 
-docker push szsctt/barcodes:5_docker
-docker push szsctt/barcodes:latest_docker
+sudo docker push szsctt/barcodes:5_docker
+sudo docker push szsctt/barcodes:latest_docker

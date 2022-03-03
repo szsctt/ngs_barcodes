@@ -14,4 +14,5 @@ RUN micromamba install -y -f /tmp/env.yml && \
 COPY Snakefile /usr/src
 COPY barcodes.py /usr/src/barcodes.py
 COPY sim.py /usr/src/sim.py
+
 WORKDIR /usr/src
