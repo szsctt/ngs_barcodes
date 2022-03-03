@@ -1,4 +1,4 @@
-FROM mambaorg/micromamba:0.21.2
+FROM mambaorg/micromamba:0.19.1
 
 #  $ docker build . -t szsctt/barcodes:latest -t szsctt/barcodes:4
 #  $ docker run --rm -it szsctt/barcodes:latest /bin/bash
@@ -6,9 +6,13 @@ FROM mambaorg/micromamba:0.21.2
 #  $ docker push szsctt/barcodes:4
 
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER env.yml /tmp/env.yml
+USER root
 
-RUN micromamba install -y -f /tmp/env.yml &&\
+ADD env.yml /tmp/env.yml
+
+RUN echo "test!"
+
+RUN micromamba env update -n base -f /tmp/env.yml &&\
 	micromamba clean --all -y
  
 COPY --chown=$MAMBA_USER:$MAMBA_USER Snakefile /usr/src
