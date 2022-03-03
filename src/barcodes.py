@@ -448,6 +448,19 @@ def increment_value(dict, path_list, value):
 	
 	dict[path_list[-1]] += value
 		
+
+def interpret_bool(str):
+	if str is True:
+		return True
+	elif str is False:
+		return False
+	elif str.lower() == 'true':
+		return True
+	elif str.lower() == 'false':
+		return False
+	else:
+		raise ValueError(f"Couldn't understand {str} in translate field: please enter 'true' or 'false'")
+
 def parse_barcs_yaml(args):
 	"""
 	parse barcodes yaml file and check that it makes sense
@@ -500,7 +513,7 @@ def parse_barcs_yaml(args):
 				
 				# check if we shoudld translate these barcodes
 				if 'translate' in barcodes[i][name]:
-					translate =  barcodes[i][name]['translate']
+					translate =  interpret_bool(barcodes[i][name]['translate'])
 				else:
 					barcodes[i][name]['translate'] = False
 					translate = False
