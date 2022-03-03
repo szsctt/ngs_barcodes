@@ -181,21 +181,27 @@ def construct_search(barcodes, args):
 	search = []
 	for i, set in enumerate(barcodes):
 		name = list(barcodes[i].keys())[0]
+		
 		# if type is variable, construct regex to match 
 		if barcodes[i][name]['type'] == 'variable':
+			
+			# add type, name, and bool specifiying if we want to translate
 			search_dict = {'type':'variable'}
 			search_dict['name'] = name
-			if args.translate:
-				search_dict['trans'] = True
-			else:
-				search_dict['trans'] = False
+			search_dict['trans'] =  barcodes[i][name]['translate']
+			
+			# if we allow mismatches
 			if 'mismatches' in barcodes[i][name]:
 				mismatches = barcodes[i][name]['mismatches']
 			else:
 				mismatches = 0
+			
+			# construct regex for searching
 			search_dict['forward'] = construct_variable_regex(barcodes[i][name]['before'], barcodes[i][name]['after'], mismatches)
+			
 			#search_dict['forward'] = f"{barcodes[i][name]['before']}(.+){barcodes[i][name]['after']}"
 			search.append(search_dict)
+			
 		# if type is constant, we need to check if we are allowing mismatches or not
 		elif barcodes[i][name]['type'] == 'constant':
 			# if number of mismatches is specified
@@ -373,11 +379,13 @@ def find_barcodes_in_line(line, search):
 				found_barcodes.append(int_type)
 
 			elif len(matches) == 1:
+				
 				#only try to translate if there is just one match and its length is a multiple of three
 				if set['trans']:
 					if ( len(matches[0]) % 3 ) == 0:
 						barc = str(Seq(matches[0], alphabet=generic_dna).translate())
 					else:
+						# otherwise just add brackets to indicate a nucleotide sequence
 						barc = f"({matches[0]})"
 				else:
 					barc = matches[0]
@@ -489,7 +497,15 @@ def parse_barcs_yaml(args):
 				
 				before = barcodes[i][name]['before']
 				after = barcodes[i][name]['after']
-				print(f"set {name} will consist of all the sequences occuring between sequences {before} and {after} in the read")
+				
+				# check if we shoudld translate these barcodes
+				if 'translate' in barcodes[i][name]:
+					translate =  barcodes[i][name]['translate']
+				else:
+					barcodes[i][name]['translate'] = False
+					translate = False
+				
+				print(f"set {name} will consist of all the sequences occuring between sequences {before} and {after} in the read.  The sequences {'will' if translate else 'will not'} be translated into amino acid squences")
 		except KeyError:
 			print("check barcodes yaml file is valid:")
 			print("'constant' barcode sets must contain a 'start' and a list of barcodes")

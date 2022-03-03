@@ -10,5 +10,6 @@
 - test1: 
     type: variable # read contains an insertion of unknown length, but must contain the 'before' sequence before the insertion and the 'after' sequence after the insertion
     mismatches: 0 # number of mismatches to allow in before/after sequences.  mismatches > 0 will slow down the script a lot. More than one mismatch is not recommended
+    translate: true
     before: "gctgac"
     after: "aggacc"
