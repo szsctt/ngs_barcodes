@@ -153,15 +153,6 @@ rule multiqc_filtered:
 		"multiqc {input} -f --outdir {params.outdir}"
 
 #### counting ####
-
-def translate_flag(wildcards):
-	if "translate_insertion" in config[wildcards.sample]:
-		if config[wildcards.sample]["translate_insertion"] is True:
-			return "--translate"
-		else:
-			return ""
-	else:
-		return ""
 		
 def debug_flag(wildcards):
 	if "debug_folder" in config[wildcards.sample]:
@@ -185,7 +176,6 @@ rule count:
 	params:
 		barcodes = lambda wildcards: config[wildcards.sample]["barcodes"],
 		prim = lambda wildcards: f"--fPrimer {config[wildcards.sample]['fwdPrimer']}" if "fwdPrimer" in config[wildcards.sample] else "",
-		translate =  translate_flag,
 		debug = debug_flag,
 		debug_folder = debug_folder
 	container: "docker://szsctt/barcodes:5_docker"				
