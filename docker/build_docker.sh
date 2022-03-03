@@ -1,10 +1,10 @@
 #!/bin/bash
 
+set -euo pipefail
+
 cp ../setup/env.yml .
 cp ../src/barcodes.py .
 cp ../src/sim.py .
-
-
 cp ../Snakefile .
 
 #### singularity build ####
@@ -15,6 +15,8 @@ cp ../Snakefile .
 
 perl -pe "s/config\[wildcards.sample\]\[\'path\'\]/\'data\/\'/g" Snakefile > Snakefile.bak
 perl -pe "s/src/\/usr\/src/g" Snakefile.bak > Snakefile
+perl -pe "s/barcodes2/base/g" env.yml > env.yml.bak
+mv  env.yml.bak  env.yml
 
 
 docker build . -t szsctt/barcodes:latest_singularity -t szsctt/barcodes:5_singularity -t szsctt/barcodes:latest -t szsctt/barcodes:5
