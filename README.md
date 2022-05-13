@@ -126,3 +126,17 @@ See the [snakemake docs](https://snakemake.readthedocs.io/en/stable/executable.h
 
 The results for each dataset are saved in sub-directories of the `out` directory.  For each sample, a merged and filtered fastq are saved, as well as the barcode counts (`out/{sample}_counts.txt`).
 
+## Running the flask app
+
+To run the flask app:
+
+```
+# start redis
+redis-server
+
+# start a redis worker
+rq worker
+
+# run flask app
+flask run
+```
