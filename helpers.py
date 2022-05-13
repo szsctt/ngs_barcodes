@@ -289,7 +289,7 @@ def create_filesets(request_form, session):
 	for num in fastqset_nums:
 		
 		# get info from form for this dataset
-		name =  request_form[f"fastqset_name_{num}"]
+		name = request_form[f"fastqset_name_{num}"]
 		
 		f1 = os.path.basename(session['fastq_files'][num][0])
 		f2 = os.path.basename(session['fastq_files'][num][1])
@@ -413,17 +413,46 @@ def run_snakemake(session):
 		session['smk_yml'][name]['barcodes'] = filename
 		
 	# write config file for snakemake
-	config = os.path.join(session['folder'], f"{next(tempfile._get_candidate_names())}_config.yml")
+	config = os.path.join(session['folder'], 
+							f"{next(tempfile._get_candidate_names())}_config.yml")
 	with open(config, 'w') as file:
 		yaml.dump(session['smk_yml'], file)
 		
-	# start subprocess command
-	cmd = ['snakemake', '--jobs', '1', '--configfile', config]
-	
-	session['running'] = True
-	session['finished'] = False
+	# by default, snakemake outputs to a folder in the current directory called 'out'
+	# but we'd rather output to a temp folder so as not to mix up files from 
+	# different sessions
+	# so need to symlink scripts here so that they're available to the snakefile when we
+	# run it here - this solution is a little hacky...
+	os.symlink(os.path.join(os.getcwd(), "src"), os.path.join(session['folder'], "src"))
 		
-	session['proc'] = subprocess.Popen(cmd)
+	# start subprocess command
+	cmd = [
+		'snakemake', '--jobs', '1', '--configfile', config, 
+		'--directory', session['folder'] # change working directory so we get results here
+	]
+		
+	p = subprocess.run(cmd, check=True)
+	
+	# copy results to working directory for download by user
+	
+	
+	return os.path.relpath(get_filename_from_session(session))
+	
+	
+def get_filename_from_session(session):
+	"""
+	Get output filename, if there's only one, from the session dict
+	"""	
+	keys = [i for i in session['smk_yml'].keys()]
+	
+	return os.path.join(session['folder'], "out", f"{keys[0]}_counts.txt")
+	
+	
+	
+	
+
+	
+	
 
 		
 		

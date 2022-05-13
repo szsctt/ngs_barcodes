@@ -1,8 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Results{% endblock %}
 {% block content %}
-		<meta http-equiv="refresh" content="5" />
-    	<h2>Running</h2>
-    	<p> Results will appear below.  In the meantime, please enjoy this random image: </p>
-    	<img src="https://source.unsplash.com/random/800x600" style="width: 70vw; min-width: 330px;">
+	{% if not finished %}
+		<meta http-equiv="refresh" content="10" />
+    	<h2>Processing</h2>
+    	<p> Results will appear below.  In the meantime, please enjoy this random image.  This page will refresh every 10 seconds</p>
+    	<img src="https://source.unsplash.com/random/800x600" style="width: 50vw; min-width: 330px;">
+	{% else %}
+		<h2>Download results</h2>
+		<a href="/return-files/" target="blank" download>
+		<button class='btn btn-default'>Download Results</button>
+		</a>  
+		<a href="/" target="blank">
+		<button class='btn btn-default'>Start again</button>
+		</a>  
+
+    {% endif %}
 {% endblock %}

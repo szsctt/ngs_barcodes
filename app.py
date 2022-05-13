@@ -1,24 +1,32 @@
+# python imports
 import os
 import shutil
 import tempfile
 import secrets
 
-from flask import Flask, render_template, request, redirect, url_for, session
+# flask imports
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from flask_session import Session
 from werkzeug.utils import secure_filename
 
+# redis imports
+import redis
+from rq import Queue
+from rq.job import Job
+
+# helpers
 from helpers import parse_form, parse_barcode_file, allowed_file_yaml, save_read_files, create_filesets, run_snakemake
 from setup import UPLOAD_FOLDER
 
 import pdb
 
-
+# make folder for uploads, if it doesn't already exist
 try:
 	os.mkdir(UPLOAD_FOLDER)
 except FileExistsError:
 	pass
 
-
+# initialize flask app
 app = Flask(__name__)
 
 # configure upload folder
@@ -29,6 +37,10 @@ app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
 app.secret_key = secrets.token_hex()
 
 print(f"using folder {app.config['UPLOAD_FOLDER']} for uploads")
+
+# redis initilzation
+redis_conn = redis.Redis()
+q = Queue(connection=redis_conn, default_timeout=7200)
 
 @app.route('/')
 def index():
@@ -121,21 +133,56 @@ def submit_files():
 @app.route('/results')
 def results():
 
-
-	pdb.set_trace()
+	# make sure we've already got some barcodes and files to work with
 	check = check_session(barcodes = True, files = True)
 	if check is not None:
 		return check
-		
-	# if we haven't already started the analysis
-	if 'proc' not in session:
-		run_snakemake(session)
-		
 
-	if session['proc'].poll() is None:
-		return render_template("results.html")
-		
+	# check for a redis job
+	if 'job' not in session:
 	
+		# enqueue job
+		# can't pickle session, so make copy of items
+		job = q.enqueue(run_snakemake, dict(session.items()))
+		
+		session['job'] = job.id
+		
+		return render_template("results.html", finished=False)
+	
+	else:
+	
+		# get job status
+		job = Job.fetch(session['job'], connection = redis_conn)
+		status = job.get_status()
+		
+		print(f'Job status: {status}')
+		
+		# if something went wrong
+		if status in ("canceled", "failed"):
+
+			flash('Something went wrong!  Please try again')
+			return redirect(url_for('index'))
+			
+		# if not finished yet
+		if status in ("queued", "started", "deferred", "scheduled"):
+		
+			return render_template("results.html", finished=False)
+			
+		else:
+
+
+			#send_from_directory(job.result)
+			return render_template("results.html", finished=True)
+		
+@app.route('/return-files/')
+def return_files_tut():
+	
+	job = Job.fetch(session['job'], connection = redis_conn)
+
+	try:
+		return send_file(job.result)
+	except Exception as e:
+		return str(e)	
 
 def check_session(barcodes = False, files = False):
 	
