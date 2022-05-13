@@ -419,6 +419,9 @@ def run_snakemake(session):
 		
 	# start subprocess command
 	cmd = ['snakemake', '--jobs', '1', '--configfile', config]
+	
+	session['running'] = True
+	session['finished'] = False
 		
 	session['proc'] = subprocess.Popen(cmd)
 

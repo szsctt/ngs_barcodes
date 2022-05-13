@@ -1,6 +1,8 @@
 import os
 import shutil
 import tempfile
+import secrets
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
 from werkzeug.utils import secure_filename
@@ -23,14 +25,10 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
 
 
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_FILE_DIR"] = tempfile.mkdtemp()
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+# secret key for sessions
+app.secret_key = secrets.token_hex()
 
 print(f"using folder {app.config['UPLOAD_FOLDER']} for uploads")
-print(f"using folder {app.config['SESSION_FILE_DIR']} for session information")
 
 @app.route('/')
 def index():
@@ -123,6 +121,8 @@ def submit_files():
 @app.route('/results')
 def results():
 
+
+	pdb.set_trace()
 	check = check_session(barcodes = True, files = True)
 	if check is not None:
 		return check
@@ -130,15 +130,12 @@ def results():
 	# if we haven't already started the analysis
 	if 'proc' not in session:
 		run_snakemake(session)
-		session['running'] = True
-		session['finished'] = False
+		
 
 	if session['proc'].poll() is None:
 		return render_template("results.html")
 		
 	
-		
-
 
 def check_session(barcodes = False, files = False):
 	
