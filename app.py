@@ -6,7 +6,7 @@ import secrets
 
 # flask imports
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
-from flask_session import Session
+#from flask_session import Session
 from werkzeug.utils import secure_filename
 
 # redis imports
@@ -39,7 +39,7 @@ app.secret_key = secrets.token_hex()
 print(f"using folder {app.config['UPLOAD_FOLDER']} for uploads")
 
 # redis initilzation
-redis_conn = redis.Redis()
+redis_conn = redis.Redis(host='redis', port=6379)
 q = Queue(connection=redis_conn, default_timeout=7200)
 
 @app.route('/')
