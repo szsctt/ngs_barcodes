@@ -10,9 +10,9 @@ services:
             - ./redis:/redis
 
     flask-app:
-        image: app-image
-        container_name: flask-app
-        build: .
+        image: szsctt/barcodes:latest
+#        container_name: flask-app
+#        build: .
         restart: on-failure
         ports:
             - '5000:5000'
@@ -20,7 +20,7 @@ services:
             - .:/app
 
     worker:
-        image: app-image:latest
+        image: szsctt/barcodes:latest
         depends_on:
             - redis
         command: rq worker --url redis://redis:6379
