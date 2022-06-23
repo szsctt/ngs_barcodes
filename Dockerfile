@@ -22,6 +22,7 @@ COPY app.py /app/app.py
 COPY static /app/static
 COPY templates /app/templates
 
+
 WORKDIR /app
 
 CMD ["flask", "run", "--host=0.0.0.0"]
