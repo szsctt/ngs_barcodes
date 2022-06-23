@@ -50,11 +50,11 @@ def parse_barcode_file(filename):
 		# check if set conforms to specifications for set type
 		if set_info['type'] == 'constant':
 			err = check_constant_set(set_info, set_name)
+			set_info['start'] = int(set_info['start'])
 		elif set_info['type'] == 'variable':
 			err = check_variable_set(set_info, set_name)
 		else:
 			err = f"Set '{set_name}' must have a key 'type' with value 'constant' or 'variable'"
-			
 		if err:
 			return None, err
 	
@@ -70,9 +70,11 @@ def check_constant_set(set, set_name):
 	if 'start' not in set.keys():
 		return f"Constant set '{set_name}' must have a key 'start' which specifies where the barcode starts in the read"
 	
-	if not isinstance(set['start'], int):
+	try:
+		set['start'] = int(set['start'])
+	except ValueError:
 		return f"Key 'Start' in constant set '{set_name}' must have a positive interger value"
-	
+		
 	if set['start'] < 0:
 		return f"'Start' key for constant set '{set_name}' must have a positive interger value"
 		
@@ -98,7 +100,6 @@ def check_constant_set(set, set_name):
 		if not len(seq) == seq_len:
 			return f"Barcodes in set '{set_name}' must all be the same length"
 	
-	return None
 	
 def check_variable_set(set, set_name):
 	"""
@@ -201,8 +202,7 @@ def parse_constant(set, set_letter):
 	yaml_set['name'] = set[name_key]
 	
 	# get set position
-	pos_key = [key for key in set if re.search(f"set_{set_letter}_pos", key)][0]
-	yaml_set['start'] = set[pos_key]
+	yaml_set['start'] = set[f"set_{set_letter}_pos"]
 	
 	# get set barcodes
 	yaml_set['barcodes'] = {}
@@ -225,10 +225,13 @@ def parse_variable(set, set_letter):
 	yaml_set['before'] = set[f"set_{set_letter}_before"]
 	
 	# get set after seq
-	yaml_set['start'] = set[f"set_{set_letter}_after"]
+	yaml_set['after'] = set[f"set_{set_letter}_after"]
 	
 	# get if we should translate this set
-	yaml_set['translate'] = set[f"{set_letter}_translate"]
+	if f"{set_letter}_translate" in set:
+		yaml_set['translate'] = set[f"{set_letter}_translate"]
+	else:
+		yaml_set['translate'] = False
 	
 	return yaml_set
 	
