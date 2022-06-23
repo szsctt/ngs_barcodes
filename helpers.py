@@ -229,7 +229,8 @@ def parse_variable(set, set_letter):
 	
 	# get if we should translate this set
 	if f"{set_letter}_translate" in set:
-		yaml_set['translate'] = set[f"{set_letter}_translate"]
+		if set[f"{set_letter}_translate"] == "Translate":
+			yaml_set['translate'] = True
 	else:
 		yaml_set['translate'] = False
 	
