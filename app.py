@@ -39,7 +39,8 @@ app.secret_key = secrets.token_hex()
 print(f"using folder {app.config['UPLOAD_FOLDER']} for uploads")
 
 # redis initilzation
-redis_conn = redis.Redis(host='redis', port=6379)
+#redis_conn = redis.Redis(host='redis', port=6379)
+redis_conn = redis.Redis(port=6379)
 q = Queue(connection=redis_conn, default_timeout=7200)
 
 @app.route('/')
@@ -143,7 +144,7 @@ def results():
 	
 		# enqueue job
 		# can't pickle session, so make copy of items
-		job = q.enqueue(run_snakemake, dict(session.items()))
+		job = q.enqueue(run_snakemake, dict(session.items()), result_ttl=86400)
 		
 		session['job'] = job.id
 		
@@ -170,7 +171,6 @@ def results():
 			
 		else:
 
-
 			#send_from_directory(job.result)
 			return render_template("results.html", finished=True)
 		
@@ -178,11 +178,12 @@ def results():
 def return_files_tut():
 	
 	job = Job.fetch(session['job'], connection = redis_conn)
+	pdb.set_trace()
 
 	try:
 		return send_file(job.result)
 	except Exception as e:
-		return str(e)	
+		return str(e)
 
 def check_session(barcodes = False, files = False):
 	
