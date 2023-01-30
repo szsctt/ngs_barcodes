@@ -4,21 +4,25 @@ This is a pipeline for detection of barcodes in capsid sequences (Illumina).
 
 It assumes data is paired-end, amplicon sequencing.  
 
-It can be run as a webapp, in a `docker` container, or using `snakemake`.
+It can be run as a webapp, in a `docker` container, or using `snakemake`.  Input files and barcodes are specified in `yaml` config files.  Outputs (barcode counts) are saved in the `out` folder.
 
 ## Quickstart
 
 To run an example using the docker container:
 
 ```
-./run.sh config/
+git clone https://github.com/szsctt/ngs_barcodes.git
+cd ngs_barcodes
+./run.sh config/example_config.yml 
 ```
 
 ## Running the webapp
 
-Navigate to the `ngs_barcodes` directory and run
+Open a shell and run
 
 ```
+git clone https://github.com/szsctt/ngs_barcodes.git
+cd ngs_barcodes
 docker compose up
 ```
 
@@ -39,10 +43,12 @@ config/
 ├─ barcodes.yml
 ```
 
-Run the pipeline using the `run.sh` script
+Run the pipeline using the `run.sh` script, and the config file `example_config.yml`.
 
 ```
-./run.sh config/config.yml
+git clone https://github.com/szsctt/ngs_barcodes.git
+cd ngs_barcodes
+./run.sh config/example_config.yml
 ```
 
 ## Using snakemake directly
