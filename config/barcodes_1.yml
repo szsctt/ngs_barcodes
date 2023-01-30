@@ -1,6 +1,5 @@
 - test2: 
     type: constant
-    mismatches: 0 
     start: 63 
     barcodes:
         test2_0: TTTACA
@@ -8,7 +7,6 @@
 
 - test3: 
     type: constant
-    mismatches: 0 
     start: 133 
     barcodes:
         test3_0: TTT
