@@ -4,7 +4,48 @@ This is a pipeline for detection of barcodes in capsid sequences (Illumina).
 
 It assumes data is paired-end, amplicon sequencing.  
 
-## Installation
+It can be run as a webapp, in a `docker` container, or using `snakemake`.
+
+## Quickstart
+
+To run an example using the docker container:
+
+```
+./run.sh config/
+```
+
+## Running the webapp
+
+Navigate to the `ngs_barcodes` directory and run
+
+```
+docker compose up
+```
+
+Open a browser and go to `http://127.0.0.1:5000/`.
+
+
+## Docker
+
+Alternativley, run the pipeline in a docker container ([`szsctt/barcodes:latest`](https://hub.docker.com/r/szsctt/barcodes/tags)), using the `run.sh` script.  For this option, your data should be in a folder called `data`, and your config files should be a folder called `config`.  Your directory structure should look like this:
+
+```
+run.sh
+data/
+├─ my_reads_R1.fq.gz
+├─ my_reads_R2.fq.gz
+config/
+├─ config.yml
+├─ barcodes.yml
+```
+
+Run the pipeline using the `run.sh` script
+
+```
+./run.sh config/config.yml
+```
+
+## Using snakemake directly
 
 The pipeline is intended to be run on Mac OSX.  It may work on Linux, but has not been tested.  It may not work on Windows.
 
@@ -18,6 +59,7 @@ setup/install.sh
 ```
 
 This will check your conda installation and download all required tools.
+
 
 ## Config file
 
@@ -110,7 +152,7 @@ Each job only uses one core, so using more tha one core will only speed the pipe
 
 Snakemake requires that a number of cores be specified - increasing this will allow jobs to be run in parallel, but this will only speed up execution if more than one sample is being processed simultaneously.
 
-Other nakemake options can also be passed in.  For example:
+Other snakemake options can also be passed in.  For example:
 ```
 ./barcodes --cores 1 --rerun-incomplete
 ```
