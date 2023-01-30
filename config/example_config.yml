@@ -1,0 +1,37 @@
+sim_0:
+    R1_pattern: ".R1.fq"  
+    R2_pattern: ".R2.fq"                 
+    adapter1: "ACACGTCTGAACTCCAGTCA"  
+    adapter2: "GTCGTGTAGGGAAAGAGTGT" 
+    min_length: 169    
+    max_length: 181   
+    fwdPrimer: "cactaagc"     
+    barcodes: "/usr/local/src/config/barcodes_0.yml"  
+sim_1:
+    R1_pattern: ".R1.fq"              
+    R2_pattern: ".R2.fq"                 
+    adapter1: "ACACGTCTGAACTCCAGTCA" 
+    adapter2: "GTCGTGTAGGGAAAGAGTGT"  
+    min_length: 169                   
+    max_length: 181                   
+    fwdPrimer: "cactaagc"                               
+    barcodes: "/usr/local/src/config/barcodes_0.yml"   
+
+sim_2:
+    R1_pattern: ".R1.fq"                
+    R2_pattern: ".R2.fq"                 
+    adapter1: "ACACGTCTGAACTCCAGTCA"    
+    adapter2: "GTCGTGTAGGGAAAGAGTGT"   
+    min_length: 206                                
+    max_length: 206                              
+    fwdPrimer: "caacttct"                                   
+    barcodes: "/usr/local/src/config/barcodes_1.yml"     
+sim_3:
+    R1_pattern: ".R1.fq"                 
+    R2_pattern: ".R2.fq"                 
+    adapter1: "ACACGTCTGAACTCCAGTCA"    
+    adapter2: "GTCGTGTAGGGAAAGAGTGT"   
+    min_length: 206                             
+    max_length: 206                          
+    fwdPrimer: "caacttct"                                  
+    barcodes: "/usr/local/src/config/barcodes_1.yml"    
