@@ -1,6 +1,5 @@
 - test0: 
     type: constant
-    mismatches: 0 #number of mismatches to allow in barcode.  mismatches > 0 will be much slower than mismatches == 0
     start: 0 #expected start base of this barcode in the read
     barcodes:
         test0_0: AGGTAC 
@@ -9,7 +8,6 @@
 
 - test1: 
     type: variable      # read contains an insertion of unknown length, but must contain the 'before' sequence before the insertion and the 'after' sequence after the insertion
-    mismatches: 0       # number of mismatches to allow in before/after sequences.  mismatches > 0 will slow down the script a lot. More than one mismatch is not recommended
     translate: true     # true or false
     before: "gctgac"
     after: "aggacc"
