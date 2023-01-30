@@ -124,14 +124,15 @@ An example yaml for one set of constant barcodes:
 - set1: 	# name of this set of barcodes				
     type: constant
     start: 0 
+    mismatches: 0
     barcodes:
         barcode1: CGTAG
         barcode2: TCCTA
 ```
 
-The barcode set name must begin the yaml block.  The (0-based) position where this barcode is expected within the read must also be specified (`start`).  The sequences of the barcodes (`barcodes`) should be specified, with each barcode given a name.  
+The barcode set name must begin the yaml block.  The (0-based) position where this barcode is expected within the read must also be specified (`start`).  The sequences of the barcodes (`barcodes`) should be specified, with each barcode given a name. Optionally, barcodes can be located allowing for mismatches (`mismatches` > 0).  Allowing for mismatches will slow down the script.
 
-One additional barcode name may be present in the output files: 'none', where none of the barcodes specified could be identified for a given read.
+Two additional barcode names may be present in the output files: 'none', where none of the barcodes specified could be identified for a given read, and 'ambiguous', where more than one of the barcodes specified could be identified for a given read (only when `mismatches` > 0).
 
 #### Variable barcodes
 
@@ -140,11 +141,14 @@ These are sequences that we want to count that are of variable sequence and leng
 ```
 - set2:
     type: variable 
+    mismatches: 0
     before: GCCAATCA 
     after: GGAGCTTC 
 ```
 
 Again, the set must have a name at the top, which is followed by the parameters of this set.  Instead of providing the sequence of each barcode, specify 'before' and 'after' sequences that immediately precede and follow the insertion site.  Any read in which the before and after sequences cannot be identified will be counted as 'none'. Any read in which the after sequence follows the before sequence (with nothing in between) will be counted as 'no\_insertion'.   
+
+The number of allowed mismatches in the 'before' and 'after' can also be specified, but allowing mismatches is not recommended.
 
 ## Running the pipeline
 
