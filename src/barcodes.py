@@ -24,7 +24,6 @@ import yaml
 import pandas as pd
 from Bio.Seq import Seq
 from Bio import SeqIO
-from Bio.Alphabet import generic_dna
 import gzip
 from mimetypes import guess_type
 from functools import partial
@@ -382,7 +381,7 @@ def find_barcodes_in_line(line, search):
 				#only try to translate if there is just one match and its length is a multiple of three
 				if set['trans']:
 					if ( len(matches[0]) % 3 ) == 0:
-						barc = str(Seq(matches[0], alphabet=generic_dna).translate())
+						barc = str(Seq(matches[0]).translate())
 					else:
 						# otherwise just add brackets to indicate a nucleotide sequence
 						barc = f"({matches[0]})"
