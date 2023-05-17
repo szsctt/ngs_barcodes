@@ -12,3 +12,8 @@ default.profraw
 *.tar.gz
 docker/Snakefile.bak
 docker/sim.py
+
+
+# Added by cargo
+
+/target
