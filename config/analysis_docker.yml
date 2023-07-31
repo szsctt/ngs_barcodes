@@ -39,6 +39,6 @@ sim_3:
     min_length: 206                             
     max_length: 206                          
     fwdPrimer: "caacttct"                                  
-    debug_folder: "/usr/locals/src/out/sim_3/"
+    debug_folder: "/usr/local/src/out/sim_3/"
     barcodes: "/usr/local/src/config/barcodes_1.yml" 
     path: "/usr/local/src/data/"      
