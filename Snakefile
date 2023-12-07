@@ -1,18 +1,24 @@
-from os import path
+import os
 
 # get suffixes for each sample
 suffix_R1 = {}
 suffix_R2 = {}
 for sample in config:
-	prefix, suffix1 = path.splitext(config[sample]['R1_pattern'])
+	prefix, suffix1 = os.path.splitext(config[sample]['R1_pattern'])
 	if suffix1 == ".gz":
-		suffix_R1[sample] = path.splitext(prefix)[0]
-		suffix_R2[sample] = path.splitext(path.splitext(config[sample]['R2_pattern'])[0])[0]
+		suffix_R1[sample] = os.path.splitext(prefix)[0]
+		suffix_R2[sample] = os.path.splitext(os.path.splitext(config[sample]['R2_pattern'])[0])[0]
 	elif suffix1 in ['.fastq', '.fq']:
 		suffix_R1[sample] = prefix
-		suffix_R2[sample] = path.splitext(config[sample]['R2_pattern'])[0]
+		suffix_R2[sample] = os.path.splitext(config[sample]['R2_pattern'])[0]
 	else:
 		raise ValueError("Unsupported file type: file extension must be 'fq' or 'fastq', and only gzip compression is supported")
+		
+		# normalize path
+		if 'path' in config[sample]:
+		  config[sample]['path'] = os.path.normpath(config[sample]['path'])
+		else:
+		  config[sample]['path'] = os.getcwd() 
 
 
 #### load config file ####
@@ -35,12 +41,12 @@ rule all:
 
 def get_read_files(wildcards, read):
     s = wildcards.sample.strip()
-    p = path.normpath(config[wildcards.sample]['path']).strip()
+    p = os.path.normpath(config[wildcards.sample]['path']).strip()
     d = config[wildcards.sample]['data'].strip()
     suffix = config[wildcards.sample]['R1_pattern'] if read == 'r1' else config[wildcards.sample]['R2_pattern']
     pa = f"{p}/{d}/{s}{suffix.strip()}"
     pa = pa.replace(' ', '')
-    pa = path.normpath(pa)
+    pa = os.path.normpath(pa)
 
     return pa
 
@@ -50,11 +56,11 @@ rule fastqc_input_r1:
 	input:
 		r1 = lambda wildcards: get_read_files(wildcards, 'r1')
 	output:
-		r1_zip =  "out/qc_input/{sample}{suffix1}_fastqc.zip",
+		r1_zip = "out/qc_input/{sample}{suffix1}_fastqc.zip",
 	params:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
-		zip_path1 = lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{wildcards.suffix1}_fastqc.zip",
-		tempdir1 = lambda wildcards, output: f"{path.dirname(output.r1_zip)}/{wildcards.sample}1",
+		zip_path1 = lambda wildcards, output: f"{os.path.dirname(output.r1_zip)}/{wildcards.sample}1/{wildcards.sample}{wildcards.suffix1}_fastqc.zip",
+		tempdir1 = lambda wildcards, output: f"{os.path.dirname(output.r1_zip)}/{wildcards.sample}1",
 	container: "docker://szsctt/barcodes:5_docker"	
 	shell: 
 		"""
@@ -70,8 +76,8 @@ rule fastqc_input_r2:
 	output:
 		r2_zip =  "out/qc_input/{sample}{suffix2}_fastqc.zip"
 	params:
-		zip_path2=lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{wildcards.suffix2}_fastqc.zip",
-		tempdir2 = lambda wildcards, output: f"{path.dirname(output.r2_zip)}/{wildcards.sample}2",
+		zip_path2=lambda wildcards, output: f"{os.path.dirname(output.r2_zip)}/{wildcards.sample}2/{wildcards.sample}{wildcards.suffix2}_fastqc.zip",
+		tempdir2 = lambda wildcards, output: f"{os.path.dirname(output.r2_zip)}/{wildcards.sample}2",
 	container: "docker://szsctt/barcodes:5_docker"		
 	shell: 
 		"""
@@ -93,7 +99,7 @@ rule multiqc:
 	output:
 		"out/qc_input/multiqc_report.html"
 	params:
-		outdir = lambda wildcards, output: path.dirname(output[0])
+		outdir = lambda wildcards, output: os.path.dirname(output[0])
 	container: "docker://szsctt/barcodes:5_docker"	
 	shell:
 		"""
@@ -144,8 +150,8 @@ rule fastqc_filtered:
 		reads_zip =  temp("out/qc_filt/{sample}.merged.filtered_fastqc.zip")
 	params:
 		# use temporary directories becuase running multiple samples in the same directory can set up race condition
-		zip_path1=lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}/{wildcards.sample}.merged.filtered_fastqc.zip",
-		tempdir1 = lambda wildcards, output: f"{path.dirname(output.reads_zip)}/{wildcards.sample}",
+		zip_path1=lambda wildcards, output: f"{os.path.dirname(output.reads_zip)}/{wildcards.sample}/{wildcards.sample}.merged.filtered_fastqc.zip",
+		tempdir1 = lambda wildcards, output: f"{os.path.dirname(output.reads_zip)}/{wildcards.sample}",
 	container: "docker://szsctt/barcodes:5_docker"		
 	shell: 
 		"""
@@ -161,7 +167,7 @@ rule multiqc_filtered:
 	output:
 		"out/qc_filt/multiqc_report.html"
 	params:
-		outdir = lambda wildcards, output: path.dirname(output[0])
+		outdir = lambda wildcards, output: os.path.dirname(output[0])
 	container: "docker://szsctt/barcodes:5_docker"	
 	shell:
 		"multiqc {input} -f --outdir {params.outdir}"
@@ -181,7 +187,7 @@ def debug_folder(wildcards):
 		return ""
 		
 def barcodes_config(wildcards):
-    return path.join(config[wildcards.sample]['path'], config[wildcards.sample]["barcodes"])
+    return os.path.join(config[wildcards.sample]['path'], config[wildcards.sample]["barcodes"])
 	
 #run script to count barcodes
 rule count:
