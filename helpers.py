@@ -351,6 +351,7 @@ def create_filesets(request_form, session):
 		# add info to session
 		session['smk_yml'][name] = {}
 		session['smk_yml'][name]['path'] = os.path.dirname(session['fastq_files'][num][0])
+		session['smk_yml'][name]['data'] = '.'
 		session['smk_yml'][name]['R1_pattern'] = suffix1
 		session['smk_yml'][name]['R2_pattern'] = suffix2
 		session['smk_yml'][name]['adapter1'] = adapter1

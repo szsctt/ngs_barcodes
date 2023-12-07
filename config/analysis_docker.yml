@@ -6,9 +6,10 @@ sim_0:
     min_length: 169    
     max_length: 181   
     fwdPrimer: "cactaagc"     
-    debug_folder: "/usr/local/src/out/sim_0/"
-    barcodes: "/usr/local/src/config/barcodes_0.yml"  
-    path: "/usr/local/src/data/"   
+    debug_folder: "/app/out/sim_0/" # can delete this line to remove extra outputs
+    barcodes: "config/barcodes_0.yml"  
+    data: "data/" # name of directory in which data is - relative 
+    path: "/app/data" # don't change this  
 sim_1:
     R1_pattern: ".R1.fq"              
     R2_pattern: ".R2.fq"                 
@@ -17,9 +18,10 @@ sim_1:
     min_length: 169                   
     max_length: 181                   
     fwdPrimer: "cactaagc"                               
-    debug_folder: "/usr/local/src/out/sim_1/"
-    barcodes: "/usr/local/src/config/barcodes_0.yml"   
-    path: "/usr/local/src/data/"    
+    debug_folder: "/app/out/sim_1/"
+    barcodes: "config/barcodes_0.yml"   
+    data: "data/"
+    path: "/app/data"    
 sim_2:
     R1_pattern: ".R1.fq"                
     R2_pattern: ".R2.fq"                 
@@ -28,9 +30,10 @@ sim_2:
     min_length: 206                                
     max_length: 206                              
     fwdPrimer: "caacttct"                                   
-    debug_folder: "/usr/local/src/out/sim_2/"
-    barcodes: "/usr/local/src/config/barcodes_1.yml"   
-    path: "/usr/local/src/data/"      
+    debug_folder: "/app/out/sim_2/"
+    barcodes: "config/barcodes_1.yml"   
+    data: "data/"
+    path: "/app/data"      
 sim_3:
     R1_pattern: ".R1.fq"                 
     R2_pattern: ".R2.fq"                 
@@ -39,6 +42,7 @@ sim_3:
     min_length: 206                             
     max_length: 206                          
     fwdPrimer: "caacttct"                                  
-    debug_folder: "/usr/local/src/out/sim_3/"
-    barcodes: "/usr/local/src/config/barcodes_1.yml" 
-    path: "/usr/local/src/data/"      
+    debug_folder: "/app/out/sim_3/"
+    barcodes: "config/barcodes_1.yml" 
+    data: "data/"
+    path: "/app/data"      
