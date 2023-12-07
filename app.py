@@ -39,8 +39,8 @@ app.secret_key = secrets.token_hex()
 print(f"using folder {app.config['UPLOAD_FOLDER']} for uploads")
 
 # redis initilzation
-#redis_conn = redis.Redis(host='redis', port=6379)
-redis_conn = redis.Redis(port=6379)
+redis_conn = redis.Redis(host='redis', port=6379)
+#redis_conn = redis.Redis(port=6379)
 q = Queue(connection=redis_conn, default_timeout=7200)
 
 @app.route('/')
