@@ -22,8 +22,5 @@ MOUNTDIR="/app/data"
 echo 
 echo "analysing data..."
 docker run --rm -it -v "$(pwd):${MOUNTDIR}" szsctt/barcodes:v0.1.2 \
-snakemake \
---snakefile /app/Snakefile \
---configfile "${MOUNTDIR}/${1}" \
---jobs 1
+/bin/bash -c "snakemake -j 1 -s /app/Snakefile --configfile ${MOUNTDIR}/${1}; cp -r out ${MOUNTDIR}"
 
