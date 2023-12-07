@@ -178,7 +178,7 @@ def results():
 def return_files_tut():
 	
 	job = Job.fetch(session['job'], connection = redis_conn)
-	pdb.set_trace()
+	#pdb.set_trace()
 
 	try:
 		return send_file(job.result)
